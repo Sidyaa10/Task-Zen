@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-4 sm:p-6 md:p-8">
-      <Card className="w-full max-w-lg animate-fadeInDown rounded-xl shadow-2xl">
+      <Card className="w-full max-w-md animate-fadeInDown rounded-xl shadow-2xl"> {/* Changed max-w-lg to max-w-md */}
         <CardHeader className="text-center p-6 sm:p-8">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-14 w-14 text-primary" />

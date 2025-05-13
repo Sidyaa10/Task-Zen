@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
   SidebarInset,
   useSidebar,
+  SidebarProvider, // Added SidebarProvider import
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
@@ -27,7 +28,8 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+// This function needs to be defined within AppLayout or imported if it's a separate component
+function AppLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { open: sidebarOpen } = useSidebar();
 
@@ -70,7 +72,6 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-4 border-t border-sidebar-border">
-          {/* Could add user profile link or quick settings here if not using UserNav in header */}
           {sidebarOpen && <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} TaskZen</p>}
         </SidebarFooter>
       </Sidebar>
@@ -78,7 +79,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <SidebarInset className="flex flex-col flex-1 overflow-hidden">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-6">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="md:hidden" /> {/* Only show trigger on mobile for main sidebar */}
+            <SidebarTrigger className="md:hidden" />
             <h1 className="text-xl font-semibold">
               {navItems.find(item => pathname.startsWith(item.href))?.label || "TaskZen"}
             </h1>
@@ -93,5 +94,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         </main>
       </SidebarInset>
     </div>
+  );
+}
+
+
+export default function AppLayout({ children }: { children: ReactNode }) {
+  return (
+    <SidebarProvider defaultOpen> {/* Wrap content with SidebarProvider */}
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </SidebarProvider>
   );
 }
