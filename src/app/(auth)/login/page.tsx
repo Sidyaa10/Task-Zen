@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Rocket, LogIn } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Corrected import
+import { useRouter } from "next/navigation"; 
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,7 +22,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-      <Card className="w-full max-w-md shadow-xl p-2 sm:p-4">
+      <Card className="w-full max-w-md shadow-xl p-6 sm:p-8">
         <CardHeader className="text-center">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-14 w-14 text-primary" />
@@ -58,4 +57,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
