@@ -1,5 +1,4 @@
 
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rocket, LogIn, UserPlus } from "lucide-react";
@@ -7,8 +6,8 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/30">
-      <Card className="w-full max-w-md shadow-2xl animate-fadeInDown m-4 sm:m-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-6 sm:p-8">
+      <Card className="w-full max-w-md shadow-2xl animate-fadeInDown">
         <CardHeader className="text-center">
           <div className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-16 w-16 text-primary" />
@@ -42,4 +41,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
