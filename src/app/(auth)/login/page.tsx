@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
-      <Card className="w-full max-w-md shadow-xl p-6 sm:p-8">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-6">
+      <Card className="w-full max-w-lg shadow-xl">
         <CardHeader className="text-center">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-14 w-14 text-primary" />
