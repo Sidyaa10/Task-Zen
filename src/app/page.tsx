@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
+    <div className="w-full flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-4">
       <Card className="w-full max-w-md shadow-2xl animate-fadeInDown">
         <CardHeader className="text-center">
           <div className="inline-flex items-center justify-center mb-6">
@@ -41,3 +41,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
