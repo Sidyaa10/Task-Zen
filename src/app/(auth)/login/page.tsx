@@ -22,8 +22,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-background to-secondary/30 p-6">
-      <Card className="w-full max-w-lg shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary/30">
+      <Card className="w-full max-w-lg shadow-xl m-4 sm:m-6">
         <CardHeader className="text-center">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-14 w-14 text-primary" />
@@ -58,3 +58,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
