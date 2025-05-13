@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rocket, LogIn, UserPlus } from "lucide-react";
@@ -6,9 +5,9 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-6 sm:p-8">
-      <Card className="w-full max-w-md shadow-2xl animate-fadeInDown">
-        <CardHeader className="text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-4 sm:p-6 md:p-8">
+      <Card className="w-full max-w-lg shadow-2xl animate-fadeInDown rounded-xl">
+        <CardHeader className="text-center p-6 sm:p-8">
           <div className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-16 w-16 text-primary" />
           </div>
@@ -17,7 +16,7 @@ export default function LandingPage() {
             Elevate Your Productivity. Simply.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-6 sm:px-8 pt-0">
           <p className="text-center text-foreground/80">
             TaskZen helps you organize your life and work with an elegant, minimal interface. Inspired by the best, built for focus.
           </p>
@@ -34,7 +33,7 @@ export default function LandingPage() {
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="justify-center text-xs text-muted-foreground">
+        <CardFooter className="justify-center text-xs text-muted-foreground p-6 sm:p-8 pt-4">
           <p>&copy; {new Date().getFullYear()} TaskZen. All rights reserved.</p>
         </CardFooter>
       </Card>

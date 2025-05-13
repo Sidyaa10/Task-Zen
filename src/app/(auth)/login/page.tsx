@@ -21,16 +21,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-6 sm:p-8">
-      <Card className="w-full max-w-lg shadow-xl">
-        <CardHeader className="text-center">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-secondary/30 p-4 sm:p-6 md:p-8">
+      <Card className="w-full max-w-xl shadow-xl rounded-xl">
+        <CardHeader className="text-center p-6 sm:p-8">
           <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Rocket className="h-14 w-14 text-primary" />
           </Link>
           <CardTitle className="text-3xl font-bold">Welcome Back!</CardTitle>
-          <CardDescription className="pt-1">Log in to continue to TaskZen.</CardDescription>
+          <CardDescription className="pt-1 text-base">Log in to continue to TaskZen.</CardDescription>
         </CardHeader>
-        <CardContent className="pt-2">
+        <CardContent className="px-6 pb-6 sm:px-8 sm:pb-8 pt-0">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -45,7 +45,7 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardContent className="text-center text-sm pt-6">
+        <CardContent className="text-center text-sm px-6 pt-4 pb-6 sm:px-8 sm:pt-4 sm:pb-8">
           <p>
             Don&apos;t have an account?{" "}
             <Button variant="link" asChild className="px-0">
