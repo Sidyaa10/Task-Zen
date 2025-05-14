@@ -20,6 +20,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
+
 // Schemas for form validation
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -227,7 +228,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
