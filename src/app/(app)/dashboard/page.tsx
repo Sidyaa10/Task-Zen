@@ -75,10 +75,12 @@ export default function DashboardPage() {
       setIsCreateTaskDialogOpen(false); // Close dialog
     } catch (error) {
       console.error("Failed to parse task:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
       toast({
         title: "Parsing Error",
-        description: "Could not parse the task. Please try again or rephrase.",
+        description: `Could not parse the task. ${errorMessage}. Please try again or rephrase.`,
         variant: "destructive",
+        duration: 7000,
       });
     } finally {
       setIsParsingTask(false);
