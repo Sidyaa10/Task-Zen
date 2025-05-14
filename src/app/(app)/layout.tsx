@@ -1,3 +1,4 @@
+
 "use client";
 import type { ReactNode } from 'react';
 import Link from 'next/link';
@@ -12,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarInset,
   useSidebar,
-  SidebarProvider, // Added SidebarProvider import
+  SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggleButton } from "@/components/theme-toggle-button";
@@ -28,7 +29,6 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-// This function needs to be defined within AppLayout or imported if it's a separate component
 function AppLayoutContent({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { open: sidebarOpen } = useSidebar();
@@ -76,10 +76,10 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset className="flex flex-col flex-1 overflow-hidden w-full"> {/* Removed max-w-7xl mx-auto */}
+      <SidebarInset className="flex flex-col flex-1 overflow-hidden w-full">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-6">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="md:hidden" />
+            <SidebarTrigger /> {/* Removed md:hidden to make it always visible */}
             <h1 className="text-xl font-semibold">
               {navItems.find(item => pathname.startsWith(item.href))?.label || "TaskZen"}
             </h1>
@@ -100,7 +100,7 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider defaultOpen> {/* Wrap content with SidebarProvider */}
+    <SidebarProvider defaultOpen>
       <AppLayoutContent>{children}</AppLayoutContent>
     </SidebarProvider>
   );
