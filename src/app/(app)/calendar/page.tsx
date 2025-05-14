@@ -14,9 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from '@/components/ui/badge';
-import { format, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
+import { format, addMonths, subMonths, isSameMonth, isSameDay, startOfDay } from 'date-fns'; // Added startOfDay
 import type { DayContentProps as RDPDayContentProps, Modifiers } from 'react-day-picker';
-import { cn } from "@/lib/utils"; // Import shared cn utility
+import { cn } from "@/lib/utils";
 
 interface CalendarEvent {
   id: string;
@@ -44,10 +44,7 @@ const EventBadge = memo(function EventBadge({ type }: { type: CalendarEvent['typ
   return <span className={`inline-block w-2 h-2 rounded-full mr-2 ${colors[type]}`} />;
 });
 
-interface CustomDayContentProps {
-  date: Date;
-  activeModifiers: Modifiers;
-  displayMonth: Date;
+interface CustomDayContentProps extends RDPDayContentProps {
   allEvents: CalendarEvent[];
 }
 
@@ -61,20 +58,20 @@ const CustomDayContent = memo(function CustomDayContent({
     (event) => isSameDay(event.date, date) && isSameMonth(event.date, displayMonth)
   );
   return (
-    <>
-      <span className={cn("self-start", {"font-bold": activeModifiers.selected || activeModifiers.today})}>{format(date, "d")}</span>
-      {dayEvents.length > 0 && (
-        <div className="mt-1 space-y-0.5 overflow-y-auto max-h-10 text-xs">
+    <div className={cn("h-full w-full p-1.5 font-normal justify-start items-start flex flex-col", {"opacity-50": !isSameMonth(date, displayMonth)})}>
+      <span className={cn("self-start", {"font-bold text-primary": activeModifiers.selected, "font-bold": activeModifiers.today})}>{format(date, "d")}</span>
+      {dayEvents.length > 0 && isSameMonth(date, displayMonth) && (
+        <div className="mt-1 space-y-0.5 overflow-y-auto max-h-10 text-xs w-full">
           {dayEvents.slice(0,2).map(event => (
             <div key={event.id} className="flex items-center truncate">
               <EventBadge type={event.type} />
-              <span className="truncate">{event.title}</span>
+              <span className="truncate text-foreground/80">{event.title}</span>
             </div>
           ))}
           {dayEvents.length > 2 && <div className="text-muted-foreground text-[10px]">+{dayEvents.length-2} more</div>}
         </div>
       )}
-    </>
+    </div>
   );
 });
 
@@ -105,13 +102,16 @@ const MemoizedUpcomingEventItem = memo(function UpcomingEventItem({event}: {even
 
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(new Date()); // Initial value for SSR, will be updated
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // Initial value for SSR
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
   const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    const now = new Date();
+    setCurrentDate(now);
+    setSelectedDate(now);
     setHydrated(true);
   }, []);
 
@@ -138,9 +138,7 @@ export default function CalendarPage() {
   const dayPickerComponents = useMemo(() => ({
     DayContent: (props: RDPDayContentProps) => (
       <CustomDayContent
-        date={props.date}
-        activeModifiers={props.activeModifiers}
-        displayMonth={props.displayMonth}
+        {...props} // Spread all props from RDPDayContentProps
         allEvents={events}
       />
     ),
@@ -155,16 +153,17 @@ export default function CalendarPage() {
       onMonthChange={setCurrentDate}
       className="rounded-md border shadow-md p-0"
       classNames={{
-        day_cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 h-20",
-        day: "h-full w-full p-1.5 font-normal aria-selected:opacity-100 justify-start items-start flex flex-col",
-        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
+        day_cell: "text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 h-24", // Increased height
+        day: cn("h-full w-full p-0 font-normal aria-selected:opacity-100"), // Removed default padding, CustomDayContent handles it
+        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md", // Ensure selected day styles apply correctly
+        day_today: "font-bold text-accent-foreground", // Today's date styling
         head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] h-10",
         caption_label: "text-lg font-medium",
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
         month: "space-y-4 w-full",
         table: "w-full border-collapse space-y-1",
-        row: "flex w-full mt-0",
+        row: "flex w-full mt-0", // Changed from mt-2 to mt-0
+        day_outside: "text-muted-foreground/50",
       }}
       components={dayPickerComponents}
     />
@@ -174,18 +173,24 @@ export default function CalendarPage() {
   const renderDayView = () => <Card className="p-4 min-h-[400px] flex items-center justify-center"><p>Day View (Coming Soon)</p></Card>;
 
   if (!hydrated) {
+    // Basic skeleton or loading state to avoid hydration mismatch
     return (
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-          <div className="h-10 w-32 bg-muted rounded-md animate-pulse"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-4">
-            <div className="h-10 w-full bg-muted rounded-md animate-pulse"></div>
-            <div className="h-[500px] w-full bg-muted rounded-md animate-pulse"></div>
+      <div className="space-y-8 animate-pulse">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <div className="h-9 w-36 bg-muted rounded"></div>
+            <div className="h-5 w-64 bg-muted rounded mt-1"></div>
           </div>
-          <div className="h-[500px] w-full bg-muted rounded-md animate-pulse"></div>
+          <div className="h-10 w-40 bg-muted rounded-md"></div>
+        </div>
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-1 space-y-4">
+            <div className="h-[600px] w-full bg-muted rounded-md"></div> {/* Placeholder for calendar */}
+          </div>
+          <div className="w-full md:w-80 lg:w-96 space-y-4">
+            <div className="h-48 w-full bg-muted rounded-md"></div> {/* Placeholder for selected date events */}
+            <div className="h-48 w-full bg-muted rounded-md"></div> {/* Placeholder for upcoming events */}
+          </div>
         </div>
       </div>
     );
@@ -268,13 +273,19 @@ export default function CalendarPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 max-h-[200px] overflow-y-auto">
                     {events
-                        .filter(event => event.date >= new Date() || isSameDay(event.date, new Date()))
+                        .filter(event => {
+                            const todayStart = startOfDay(new Date());
+                            return event.date >= todayStart;
+                         })
                         .sort((a,b) => a.date.getTime() - b.date.getTime())
                         .slice(0,5)
                         .map(event => (
                           <MemoizedUpcomingEventItem key={event.id} event={event} />
                     ))}
-                    {events.filter(event => event.date >= new Date()).length === 0 && (
+                    {events.filter(event => {
+                            const todayStart = startOfDay(new Date());
+                            return event.date >= todayStart;
+                        }).length === 0 && (
                          <p className="text-sm text-muted-foreground text-center py-4">No upcoming events.</p>
                     )}
                 </CardContent>
