@@ -1,7 +1,7 @@
 
 "use client";
 import type { ReactNode } from 'react';
-import { useState, useEffect, memo, useCallback, useMemo } from 'react'; // Added memo, useCallback, useMemo
+import { useState, useEffect, memo, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from '@/components/ui/badge';
-import { format, addMonths, subMonths, startOfWeek, addDays, isSameMonth, isSameDay, getMonth, getYear } from 'date-fns';
-import type { DayPicker } from 'react-day-picker'; // For DayContent props type
+import { format, addMonths, subMonths, isSameMonth, isSameDay } from 'date-fns';
+import type { DayContentProps as RDPDayContentProps, Modifiers } from 'react-day-picker';
+import { cn } from "@/lib/utils"; // Import shared cn utility
 
 interface CalendarEvent {
   id: string;
@@ -45,19 +46,19 @@ const EventBadge = memo(function EventBadge({ type }: { type: CalendarEvent['typ
 
 interface CustomDayContentProps {
   date: Date;
-  activeModifiers: Partial<Record<import('react-day-picker').Matcher, boolean>>; // Simplified DayPicker internal type
+  activeModifiers: Modifiers;
+  displayMonth: Date;
   allEvents: CalendarEvent[];
-  currentDisplayMonth: Date;
 }
 
 const CustomDayContent = memo(function CustomDayContent({
   date,
   activeModifiers,
+  displayMonth,
   allEvents,
-  currentDisplayMonth,
 }: CustomDayContentProps) {
   const dayEvents = allEvents.filter(
-    (event) => isSameDay(event.date, date) && isSameMonth(event.date, currentDisplayMonth)
+    (event) => isSameDay(event.date, date) && isSameMonth(event.date, displayMonth)
   );
   return (
     <>
@@ -135,14 +136,15 @@ export default function CalendarPage() {
   const selectedDateEvents = useMemo(() => getEventsForDate(selectedDate), [selectedDate, getEventsForDate]);
 
   const dayPickerComponents = useMemo(() => ({
-    DayContent: (props: { date: Date; activeModifiers: any; }) => (
+    DayContent: (props: RDPDayContentProps) => (
       <CustomDayContent
-        {...props}
+        date={props.date}
+        activeModifiers={props.activeModifiers}
+        displayMonth={props.displayMonth}
         allEvents={events}
-        currentDisplayMonth={currentDate}
       />
     ),
-  }), [events, currentDate]);
+  }), [events]);
 
   const renderMonthView = () => (
     <Calendar
@@ -281,8 +283,4 @@ export default function CalendarPage() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
 }

@@ -15,8 +15,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea component
 import { Bell, UserCircle, ShieldCheck, Palette, CreditCard, LogOut } from "lucide-react";
-import { ThemeToggleButton } from '@/components/theme-toggle-button'; // Assuming this component exists for theme toggling
+import { ThemeToggleButton } from '@/components/theme-toggle-button';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 
@@ -50,9 +51,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* Settings Navigation (Optional - can be tabs or simple sections) */}
-        {/* For simplicity, we'll use distinct cards for sections */}
-
         {/* Profile Settings */}
         <Card className="md:col-span-2 lg:col-span-3 shadow-lg">
           <CardHeader>
@@ -79,9 +77,8 @@ export default function SettingsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="bio">Bio</Label>
-              <textarea
+              <Textarea
                 id="bio"
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Tell us a little about yourself"
                 defaultValue="Focused on productivity and getting things done."
               />
@@ -219,5 +216,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    
