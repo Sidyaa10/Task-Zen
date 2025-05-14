@@ -169,7 +169,7 @@ export default function CalendarPage() {
 
   if (!hydrated) {
     return (
-      <div className="space-y-8 animate-pulse">
+      <div className="max-w-5xl mx-auto space-y-8 animate-pulse">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="h-9 w-36 bg-muted rounded"></div>
@@ -191,7 +191,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
             <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
