@@ -19,7 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { lookupFlow } from '@genkit-ai/next/client';
+import { runFlow } from '@genkit-ai/next/client'; // Changed from lookupFlow to runFlow
 import type { ParseTaskFlowInput, ParsedTaskOutput } from '@/ai/flows/parse-task-flow';
 
 
@@ -55,11 +55,13 @@ export default function DashboardPage() {
 
     setIsParsingTask(true);
     try {
-      const clientParseTaskFlow = lookupFlow('parseTaskFlow');
       const currentDate = new Date().toISOString();
+      // The input for parseTaskFlow expects naturalLanguageInput and currentDate
+      // as defined in ParseTaskFlowInputSchema in parse-task-flow.ts
       const input: ParseTaskFlowInput = { naturalLanguageInput: naturalLanguageTask, currentDate };
       
-      const parsedTask: ParsedTaskOutput = await clientParseTaskFlow(input);
+      // Use runFlow with the flow ID and the input object
+      const parsedTask: ParsedTaskOutput = await runFlow('parseTaskFlow', input); 
       
       let description = `Title: ${parsedTask.title || 'N/A'}`;
       if (parsedTask.description) description += `\nDescription: ${parsedTask.description}`;
