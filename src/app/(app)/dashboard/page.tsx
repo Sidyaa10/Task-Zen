@@ -1,8 +1,26 @@
+
+"use client"; // Add "use client"
+import type { ReactNode } from 'react'; // Added ReactNode
+import { useState, useCallback } from 'react'; // Added useState, useCallback
 import { TaskCard } from "@/components/task-card";
 import { CommandPalettePlaceholder } from "@/components/command-palette-placeholder";
 import { CalendarViewPlaceholder } from "@/components/calendar-view-placeholder";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription, 
+  DialogFooter,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from '@/hooks/use-toast';
+import { parseTaskFromNaturalLanguage, type ParsedTaskOutput } from '@/ai/flows/parse-task-flow';
+
 
 export default function DashboardPage() {
   const taskColumns = [
@@ -19,13 +37,96 @@ export default function DashboardPage() {
     ]},
   ];
 
+  const { toast } = useToast();
+  const [isCreateTaskDialogOpen, setIsCreateTaskDialogOpen] = useState(false);
+  const [naturalLanguageTask, setNaturalLanguageTask] = useState("");
+  const [isParsingTask, setIsParsingTask] = useState(false);
+
+  const handleParseTask = useCallback(async () => {
+    if (!naturalLanguageTask.trim()) {
+      toast({
+        title: "Input Required",
+        description: "Please enter a task description.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsParsingTask(true);
+    try {
+      const parsedTask: ParsedTaskOutput = await parseTaskFromNaturalLanguage(naturalLanguageTask);
+      
+      let description = `Title: ${parsedTask.title || 'N/A'}`;
+      if (parsedTask.description) description += `\nDescription: ${parsedTask.description}`;
+      if (parsedTask.dueDate) description += `\nDue: ${parsedTask.dueDate}`;
+      if (parsedTask.assignee) description += `\nAssignee: ${parsedTask.assignee}`;
+      if (parsedTask.project) description += `\nProject: ${parsedTask.project}`;
+      if (parsedTask.tags && parsedTask.tags.length > 0) description += `\nTags: ${parsedTask.tags.join(', ')}`;
+      if (parsedTask.priority) description += `\nPriority: ${parsedTask.priority}`;
+      
+      toast({
+        title: "Task Parsed (Preview)",
+        description: <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4 whitespace-pre-wrap"><code className="text-white">{JSON.stringify(parsedTask, null, 2)}</code></pre>,
+        duration: 9000, // Keep toast longer for preview
+      });
+      console.log("Parsed Task:", parsedTask);
+      // Here you would typically use this data to populate a task creation form or directly create a task
+      setNaturalLanguageTask(""); // Clear input
+      setIsCreateTaskDialogOpen(false); // Close dialog
+    } catch (error) {
+      console.error("Failed to parse task:", error);
+      toast({
+        title: "Parsing Error",
+        description: "Could not parse the task. Please try again or rephrase.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsParsingTask(false);
+    }
+  }, [naturalLanguageTask, toast]);
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
-        <Button className="transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
-          <PlusCircle className="mr-2 h-5 w-5" /> Add New Task
-        </Button>
+        
+        <Dialog open={isCreateTaskDialogOpen} onOpenChange={setIsCreateTaskDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
+              <PlusCircle className="mr-2 h-5 w-5" /> Add New Task
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Create Task with AI</DialogTitle>
+              <DialogDescription>
+                Describe the task you want to create using natural language.
+                For example, &quot;Review design mockups with Sarah next Friday at 2pm for Project Alpha #design #review priority high&quot;.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="naturalLanguageTask">
+                  Task Description
+                </Label>
+                <Input
+                  id="naturalLanguageTask"
+                  value={naturalLanguageTask}
+                  onChange={(e) => setNaturalLanguageTask(e.target.value)}
+                  placeholder="e.g., Email team about Q3 budget by EOD tomorrow"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsCreateTaskDialogOpen(false)}>Cancel</Button>
+              <Button type="button" onClick={handleParseTask} disabled={isParsingTask || !naturalLanguageTask.trim()}>
+                {isParsingTask ? "Parsing..." : "Parse & Create (Preview)"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       {/* Draggable Task Blocks Section - Placeholder */}
@@ -79,3 +180,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
