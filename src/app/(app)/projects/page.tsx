@@ -2,7 +2,7 @@
 "use client";
 import type { ReactNode } from 'react'; // Added ReactNode
 import { memo } from 'react'; // Added memo
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"; // Added CardFooter
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ListFilter, LayoutGrid, List } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -16,53 +16,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
-// Sample project data
-const projects = [
-  {
-    id: "proj-1",
-    name: "Website Redesign",
-    description: "Complete overhaul of the company website for improved UX and modern aesthetics.",
-    status: "In Progress",
-    team: ["Alice", "Bob", "Charlie"],
-    dueDate: "2024-12-15",
-    progress: 65,
-    image: "https://picsum.photos/seed/project1/400/200",
-    dataAiHint: "website design"
-  },
-  {
-    id: "proj-2",
-    name: "Mobile App Development",
-    description: "Develop a new cross-platform mobile application for product showcase.",
-    status: "Planning",
-    team: ["David", "Eve"],
-    dueDate: "2025-03-01",
-    progress: 15,
-    image: "https://picsum.photos/seed/project2/400/200",
-    dataAiHint: "mobile app"
-  },
-  {
-    id: "proj-3",
-    name: "Marketing Campaign Q4",
-    description: "Launch a comprehensive marketing campaign for the new product line.",
-    status: "Completed",
-    team: ["Frank", "Grace", "Heidi"],
-    dueDate: "2024-11-30",
-    progress: 100,
-    image: "https://picsum.photos/seed/project3/400/200",
-    dataAiHint: "marketing campaign"
-  },
-  {
-    id: "proj-4",
-    name: "API Integration",
-    description: "Integrate third-party APIs for enhanced functionality.",
-    status: "On Hold",
-    team: ["Alice", "David"],
-    dueDate: "2025-01-20",
-    progress: 30,
-    image: "https://picsum.photos/seed/project4/400/200",
-    dataAiHint: "api integration"
-  },
-];
+// Sample project data is now an empty array
+const projects: Project[] = [];
 
 interface Project {
   id: string;
@@ -87,7 +42,7 @@ const ProjectCard = memo(function ProjectCard({ project }: ProjectCardProps) {
         <Image
           src={project.image}
           alt={project.name}
-          layout="fill"
+          fill // Replaced layout="fill"
           objectFit="cover"
           className="rounded-t-lg"
           data-ai-hint={project.dataAiHint}
@@ -113,7 +68,7 @@ const ProjectCard = memo(function ProjectCard({ project }: ProjectCardProps) {
         </div>
         <div className="text-xs text-muted-foreground text-right">{project.progress}% complete</div>
       </CardContent>
-      <CardContent className="pt-0">
+      <CardFooter className="pt-0"> {/* Use CardFooter for consistency and correct display */}
         <div className="flex -space-x-2 overflow-hidden">
           {project.team.map((member, index) => (
             <Image
@@ -127,7 +82,7 @@ const ProjectCard = memo(function ProjectCard({ project }: ProjectCardProps) {
             />
           ))}
         </div>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 });

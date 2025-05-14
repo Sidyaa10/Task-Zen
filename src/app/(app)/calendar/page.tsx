@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from '@/components/ui/badge';
-import { format, addMonths, subMonths, isSameMonth, isSameDay, startOfDay } from 'date-fns'; // Added startOfDay
+import { format, addMonths, subMonths, isSameMonth, isSameDay, startOfDay } from 'date-fns'; 
 import type { DayContentProps as RDPDayContentProps, Modifiers } from 'react-day-picker';
 import { cn } from "@/lib/utils";
 
@@ -24,16 +24,11 @@ interface CalendarEvent {
   date: Date;
   type: 'task' | 'meeting' | 'reminder';
   description?: string;
+  isImportant?: boolean; // Added for future use with notifications
 }
 
-const sampleEvents: CalendarEvent[] = [
-  { id: '1', title: 'Team Meeting', date: new Date(2024, 6, 15, 10, 0), type: 'meeting', description: 'Weekly sync-up' },
-  { id: '2', title: 'Design Review', date: new Date(2024, 6, 17, 14, 0), type: 'meeting' },
-  { id: '3', title: 'Submit Report', date: new Date(2024, 6, 18), type: 'task' },
-  { id: '4', title: 'Client Call', date: new Date(2024, 6, 22, 11, 30), type: 'meeting', description: 'Discuss project updates' },
-  { id: '5', title: 'Deploy v1.2', date: new Date(2024, 6, 25), type: 'task' },
-  { id: '6', title: 'Follow up with John', date: new Date(2024, 7, 2), type: 'reminder' },
-];
+// Events list is now initially empty
+const sampleEvents: CalendarEvent[] = [];
 
 const EventBadge = memo(function EventBadge({ type }: { type: CalendarEvent['type'] }) {
   const colors = {
@@ -102,10 +97,10 @@ const MemoizedUpcomingEventItem = memo(function UpcomingEventItem({event}: {even
 
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date()); // Initial value for SSR, will be updated
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date()); // Initial value for SSR
+  const [currentDate, setCurrentDate] = useState<Date>(new Date()); 
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
-  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents);
+  const [events, setEvents] = useState<CalendarEvent[]>(sampleEvents); // Uses the initially empty sampleEvents
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -138,7 +133,7 @@ export default function CalendarPage() {
   const dayPickerComponents = useMemo(() => ({
     DayContent: (props: RDPDayContentProps) => (
       <CustomDayContent
-        {...props} // Spread all props from RDPDayContentProps
+        {...props} 
         allEvents={events}
       />
     ),
@@ -153,16 +148,16 @@ export default function CalendarPage() {
       onMonthChange={setCurrentDate}
       className="rounded-md border shadow-md p-0"
       classNames={{
-        day_cell: "text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 h-24", // Increased height
-        day: cn("h-full w-full p-0 font-normal aria-selected:opacity-100"), // Removed default padding, CustomDayContent handles it
-        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md", // Ensure selected day styles apply correctly
-        day_today: "font-bold text-accent-foreground", // Today's date styling
+        day_cell: "text-center text-sm p-0 relative first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20 h-24",
+        day: cn("h-full w-full p-0 font-normal aria-selected:opacity-100"),
+        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
+        day_today: "font-bold text-accent-foreground",
         head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] h-10",
         caption_label: "text-lg font-medium",
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
         month: "space-y-4 w-full",
         table: "w-full border-collapse space-y-1",
-        row: "flex w-full mt-0", // Changed from mt-2 to mt-0
+        row: "flex w-full mt-0", 
         day_outside: "text-muted-foreground/50",
       }}
       components={dayPickerComponents}
@@ -173,7 +168,6 @@ export default function CalendarPage() {
   const renderDayView = () => <Card className="p-4 min-h-[400px] flex items-center justify-center"><p>Day View (Coming Soon)</p></Card>;
 
   if (!hydrated) {
-    // Basic skeleton or loading state to avoid hydration mismatch
     return (
       <div className="space-y-8 animate-pulse">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -185,11 +179,11 @@ export default function CalendarPage() {
         </div>
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1 space-y-4">
-            <div className="h-[600px] w-full bg-muted rounded-md"></div> {/* Placeholder for calendar */}
+            <div className="h-[600px] w-full bg-muted rounded-md"></div>
           </div>
           <div className="w-full md:w-80 lg:w-96 space-y-4">
-            <div className="h-48 w-full bg-muted rounded-md"></div> {/* Placeholder for selected date events */}
-            <div className="h-48 w-full bg-muted rounded-md"></div> {/* Placeholder for upcoming events */}
+            <div className="h-48 w-full bg-muted rounded-md"></div>
+            <div className="h-48 w-full bg-muted rounded-md"></div>
           </div>
         </div>
       </div>
