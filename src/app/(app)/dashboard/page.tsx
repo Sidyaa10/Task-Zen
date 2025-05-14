@@ -19,7 +19,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
-import { parseTaskFromNaturalLanguage, type ParsedTaskOutput } from '@/ai/flows/parse-task-flow';
+import { lookupFlow } from '@genkit-ai/next/client';
+import type { ParseTaskFlowInput, ParsedTaskOutput } from '@/ai/flows/parse-task-flow';
 
 
 export default function DashboardPage() {
@@ -54,7 +55,11 @@ export default function DashboardPage() {
 
     setIsParsingTask(true);
     try {
-      const parsedTask: ParsedTaskOutput = await parseTaskFromNaturalLanguage(naturalLanguageTask);
+      const clientParseTaskFlow = lookupFlow('parseTaskFlow');
+      const currentDate = new Date().toISOString();
+      const input: ParseTaskFlowInput = { naturalLanguageInput: naturalLanguageTask, currentDate };
+      
+      const parsedTask: ParsedTaskOutput = await clientParseTaskFlow(input);
       
       let description = `Title: ${parsedTask.title || 'N/A'}`;
       if (parsedTask.description) description += `\nDescription: ${parsedTask.description}`;
