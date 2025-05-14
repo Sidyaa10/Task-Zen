@@ -76,7 +76,7 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
         </SidebarFooter>
       </Sidebar>
 
-      <SidebarInset className="flex flex-col flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+      <SidebarInset className="flex flex-col flex-1 overflow-hidden w-full"> {/* Removed max-w-7xl mx-auto */}
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-sm px-6">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
