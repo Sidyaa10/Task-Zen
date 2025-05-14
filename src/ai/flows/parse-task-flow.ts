@@ -19,7 +19,7 @@ const ParseTaskFlowInputSchema = z.object({
 export type ParseTaskFlowInput = z.infer<typeof ParseTaskFlowInputSchema>;
 
 const ParsedTaskOutputSchema = z.object({
-  title: z.string().optional().describe('The main title or name of the task.'),
+  title: z.string().describe('The main title or name of the task. This field is mandatory.'), // Made title mandatory
   description: z.string().optional().describe('A more detailed description of the task.'),
   dueDate: z.string().optional().describe("The due date for the task, formatted as 'YYYY-MM-DD' or 'YYYY-MM-DD HH:mm' if time is specified. If only a relative term like 'tomorrow' is provided and cannot be resolved to a specific date by the LLM, return the relative term."),
   assignee: z.string().optional().describe('The person or team assigned to the task, if mentioned.'),
@@ -71,18 +71,14 @@ const parseTaskFlow = ai.defineFlow(
   async (input) => {
     const { output } = await taskParserPrompt(input);
     if (!output) {
-        console.error("Task parsing prompt did not return an output. LLM response might be malformed or not adhere to schema.");
-        // Throw an error to be caught by the calling function's try-catch block
-        throw new Error("Failed to parse task from LLM response. The AI could not understand the input or structure the data correctly.");
+        // This catch is for cases where the LLM response is completely malformed or
+        // if Zod validation of the output schema (which now requires a title) fails.
+        console.error("Task parsing prompt did not return a valid output adhering to the schema. LLM response might be malformed or missing mandatory fields like 'title'.");
+        throw new Error("Failed to parse task from LLM response. The AI could not understand the input or structure the data correctly according to the required format (e.g., 'title' might be missing).");
     }
-    // Ensure title is present, even if the schema allows it to be optional,
-    // as per the prompt's instruction. If not, treat it as a partial failure.
-    if (!output.title) {
-        console.warn("Task parsing prompt returned output without a title, though title is expected to be mandatory by prompt.", output);
-        // You could either throw an error here or try to supplement/fix.
-        // For now, let's allow it if schema permits, but it's a point of attention.
-        // If title becomes strictly mandatory in schema, Zod would handle this.
-    }
+    // The specific check for output.title is no longer needed here,
+    // as Zod validation for ParsedTaskOutputSchema (which defines title as mandatory)
+    // will have already ensured its presence if `output` is not null.
     return output;
   }
 );
