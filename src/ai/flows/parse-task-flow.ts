@@ -34,6 +34,7 @@ export type ParsedTaskOutput = z.infer<typeof ParsedTaskOutputSchema>;
 export async function parseTaskFromNaturalLanguage(naturalLanguageInput: string): Promise<ParsedTaskOutput> {
   const currentDate = new Date().toISOString();
   // Call the Genkit flow, ensuring the output matches ParsedTaskOutput
+  // If parseTaskFlow throws an error, it will be propagated to the caller.
   const result = await parseTaskFlow({ naturalLanguageInput, currentDate });
   return result;
 }
@@ -70,14 +71,19 @@ const parseTaskFlow = ai.defineFlow(
   async (input) => {
     const { output } = await taskParserPrompt(input);
     if (!output) {
-        // Fallback or error handling if prompt returns no output
-        // This might indicate an issue with the prompt or model response
-        // For now, returning an empty object or a default error structure might be suitable
-        // Or, throw an error to be caught by the calling function
-        console.error("Task parsing prompt did not return an output.");
-        // Depending on strictness, either throw or return a minimal valid object
-        return { title: "Error: Could not parse task" }; // Example fallback
+        console.error("Task parsing prompt did not return an output. LLM response might be malformed or not adhere to schema.");
+        // Throw an error to be caught by the calling function's try-catch block
+        throw new Error("Failed to parse task from LLM response. The AI could not understand the input or structure the data correctly.");
+    }
+    // Ensure title is present, even if the schema allows it to be optional,
+    // as per the prompt's instruction. If not, treat it as a partial failure.
+    if (!output.title) {
+        console.warn("Task parsing prompt returned output without a title, though title is expected to be mandatory by prompt.", output);
+        // You could either throw an error here or try to supplement/fix.
+        // For now, let's allow it if schema permits, but it's a point of attention.
+        // If title becomes strictly mandatory in schema, Zod would handle this.
     }
     return output;
   }
 );
+
