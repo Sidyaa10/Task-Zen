@@ -19,6 +19,8 @@ import { z } from "zod";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { runFlow } from '@genkit-ai/next/client';
+import type { ParseTaskFlowInput, ParsedTaskOutput } from '@/ai/flows/parse-task-flow';
 
 
 // Schemas for form validation
@@ -168,6 +170,9 @@ export default function DashboardPage() {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
+  const [naturalLanguageInput, setNaturalLanguageInput] = useState('');
+  const [isParsing, setIsParsing] = useState(false);
+
 
   const { control, handleSubmit, register, watch, formState: { errors }, reset, setValue } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
@@ -198,8 +203,55 @@ export default function DashboardPage() {
     setActiveTasks(prev => [...prev, newTask]);
     toast({ title: "Task Created", description: `"${newTask.title}" has been added.` });
     reset();
+    setNaturalLanguageInput(''); // Clear natural language input
     setIsFormOpen(false);
   };
+  
+  const handleParseAndCreateTask = async () => {
+    if (!naturalLanguageInput.trim()) {
+      toast({ variant: "destructive", title: "Input Required", description: "Please enter a task description." });
+      return;
+    }
+    setIsParsing(true);
+    try {
+      const flowInput: ParseTaskFlowInput = {
+        naturalLanguageInput,
+        currentDate: new Date().toISOString(),
+      };
+      const parsedResult = await runFlow<ParseTaskFlowInput, ParsedTaskOutput>('parseTaskFlow', flowInput);
+
+      if (parsedResult.title && parsedResult.title.startsWith("Error:")) {
+        toast({ variant: "destructive", title: "Parsing Error", description: parsedResult.description || "Could not understand the task. Please try rephrasing." });
+      } else if (parsedResult.title) {
+        // Pre-fill the form with parsed data
+        setValue("title", parsedResult.title);
+        if (parsedResult.description) setValue("description", parsedResult.description);
+        
+        if (parsedResult.dueDate) {
+          setValue("dueDate", new Date(parsedResult.dueDate));
+          setValue("taskType", "one-off");
+        } else {
+          // Default to one-off if no date, or you can adjust logic
+          setValue("taskType", "one-off"); 
+        }
+        // Handle other fields like startDate, recurring details if parsed
+        // For simplicity, we are only directly setting a few fields here
+        
+        toast({ title: "Task Details Parsed!", description: "Review and confirm the details below." });
+        // The form is now pre-filled. The user can confirm or edit.
+        // The "Create Task" button in the main form will handle actual creation.
+      } else {
+         toast({ variant: "destructive", title: "Parsing Error", description: "Could not extract task details. Please try again." });
+      }
+    } catch (error: any) {
+      console.error("Error parsing task:", error);
+      toast({ variant: "destructive", title: "Parsing Error", description: error.message || "An unexpected error occurred while parsing." });
+    } finally {
+      setIsParsing(false);
+      // Do not close the dialog here, let user confirm/edit the pre-filled form
+    }
+  };
+
 
   const handleCompleteTask = (taskId: string) => {
     setActiveTasks(prevTasks => {
@@ -228,10 +280,16 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8"> {/* Changed max-w-6xl to max-w-5xl */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold tracking-tight">My Dashboard</h1>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <Dialog open={isFormOpen} onOpenChange={(isOpen) => {
+            setIsFormOpen(isOpen);
+            if (!isOpen) {
+                reset(); // Reset form when dialog is closed
+                setNaturalLanguageInput(''); // Clear NL input
+            }
+        }}>
           <DialogTrigger asChild>
             <Button className="transition-all duration-300 hover:scale-[1.02] hover:shadow-md">
               <PlusCircle className="mr-2 h-5 w-5" /> Create New Task
@@ -240,8 +298,39 @@ export default function DashboardPage() {
           <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Create New Task</DialogTitle>
+              <CardDescription>Enter task details manually or describe your task using natural language below.</CardDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit(handleCreateTask)} className="space-y-4 py-2">
+            
+            <div className="space-y-3 py-2">
+                <div>
+                    <Label htmlFor="naturalLanguageInput">Describe your task (AI Powered)</Label>
+                    <Textarea 
+                        id="naturalLanguageInput"
+                        placeholder="e.g., Schedule a meeting with marketing next Tuesday at 3pm for Project Phoenix"
+                        value={naturalLanguageInput}
+                        onChange={(e) => setNaturalLanguageInput(e.target.value)}
+                        className="min-h-[60px]"
+                    />
+                </div>
+                <Button onClick={handleParseAndCreateTask} disabled={isParsing} className="w-full">
+                    {isParsing ? "Parsing..." : "Parse with AI & Pre-fill Form"}
+                </Button>
+            </div>
+            
+            <div className="my-4">
+                <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-background px-2 text-muted-foreground">
+                        Or enter manually
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit(handleCreateTask)} className="space-y-4">
               <div>
                 <Label htmlFor="title">Task Title</Label>
                 <Input id="title" {...register("title")} />
