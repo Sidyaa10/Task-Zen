@@ -1,4 +1,7 @@
 
+"use client";
+import type { ReactNode } from 'react'; // Added ReactNode
+import { memo } from 'react'; // Added memo
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ListFilter, LayoutGrid, List } from "lucide-react";
@@ -61,6 +64,75 @@ const projects = [
   },
 ];
 
+interface Project {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  team: string[];
+  dueDate: string;
+  progress: number;
+  image: string;
+  dataAiHint: string;
+}
+
+interface ProjectCardProps {
+  project: Project;
+}
+
+const ProjectCard = memo(function ProjectCard({ project }: ProjectCardProps) {
+  return (
+    <Card key={project.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200">
+      <div className="relative w-full h-40">
+        <Image
+          src={project.image}
+          alt={project.name}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-lg"
+          data-ai-hint={project.dataAiHint}
+          priority={false} // Consider setting priority for above-the-fold images
+        />
+      </div>
+      <CardHeader>
+        <CardTitle>{project.name}</CardTitle>
+        <CardDescription className="line-clamp-2">{project.description}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow space-y-2">
+        <div className="text-sm text-muted-foreground">
+          <strong>Status:</strong> {project.status}
+        </div>
+        <div className="text-sm text-muted-foreground">
+          <strong>Due:</strong> {project.dueDate}
+        </div>
+        <div className="w-full bg-muted rounded-full h-2.5">
+          <div
+            className="bg-primary h-2.5 rounded-full"
+            style={{ width: `${project.progress}%` }}
+          ></div>
+        </div>
+        <div className="text-xs text-muted-foreground text-right">{project.progress}% complete</div>
+      </CardContent>
+      <CardContent className="pt-0">
+        <div className="flex -space-x-2 overflow-hidden">
+          {project.team.map((member, index) => (
+            <Image
+              key={index}
+              className="inline-block h-8 w-8 rounded-full ring-2 ring-background"
+              src={`https://picsum.photos/seed/${member.toLowerCase()}/40/40`}
+              alt={member}
+              width={32}
+              height={32}
+              data-ai-hint="person avatar"
+            />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+});
+
+
 export default function ProjectsPage() {
   return (
     <div className="space-y-8">
@@ -107,52 +179,7 @@ export default function ProjectsPage() {
       <section>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Card key={project.id} className="flex flex-col shadow-md hover:shadow-lg transition-shadow duration-200">
-              <div className="relative w-full h-40">
-                <Image
-                  src={project.image}
-                  alt={project.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-t-lg"
-                  data-ai-hint={project.dataAiHint}
-                />
-              </div>
-              <CardHeader>
-                <CardTitle>{project.name}</CardTitle>
-                <CardDescription className="line-clamp-2">{project.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow space-y-2">
-                <div className="text-sm text-muted-foreground">
-                  <strong>Status:</strong> {project.status}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <strong>Due:</strong> {project.dueDate}
-                </div>
-                <div className="w-full bg-muted rounded-full h-2.5">
-                  <div
-                    className="bg-primary h-2.5 rounded-full"
-                    style={{ width: `${project.progress}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-muted-foreground text-right">{project.progress}% complete</div>
-              </CardContent>
-              <CardContent className="pt-0">
-                <div className="flex -space-x-2 overflow-hidden">
-                  {project.team.map((member, index) => (
-                    <Image
-                      key={index}
-                      className="inline-block h-8 w-8 rounded-full ring-2 ring-background"
-                      src={`https://picsum.photos/seed/${member.toLowerCase()}/40/40`}
-                      alt={member}
-                      width={32}
-                      height={32}
-                      data-ai-hint="person avatar"
-                    />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ProjectCard key={project.id} project={project} />
           ))}
            {projects.length === 0 && (
              <Card className="md:col-span-2 lg:col-span-3 flex items-center justify-center h-64 border-2 border-dashed">
@@ -168,5 +195,3 @@ export default function ProjectsPage() {
     </div>
   );
 }
-
-    

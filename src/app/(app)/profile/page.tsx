@@ -1,6 +1,7 @@
 
 "use client";
 import type { ReactNode } from 'react';
+import { memo, useCallback } from 'react'; // Added memo, useCallback
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +13,8 @@ import { Edit3, Mail, Phone, MapPin, Briefcase, BarChart2, Shield, Settings } fr
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
-// Mock user data - in a real app, this would come from an API or auth context
-const userProfile = {
+// Mock user data
+const userProfileData = { // Renamed
   name: "Alex Johnson",
   email: "alex.johnson@example.com",
   avatarUrl: "https://picsum.photos/seed/alex/200/200",
@@ -29,6 +30,12 @@ const userProfile = {
   ],
 };
 
+interface Activity {
+  id: string;
+  action: string;
+  timestamp: string;
+}
+
 const getInitials = (name: string) => {
   return name
     .split(" ")
@@ -37,12 +44,23 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+const MemoizedActivityItem = memo(function ActivityItem({ activity }: { activity: Activity }) {
+  return (
+    <li className="flex items-start">
+      <BarChart2 className="mr-3 mt-1 h-5 w-5 text-primary flex-shrink-0" />
+      <div>
+        <p className="text-sm font-medium">{activity.action}</p>
+        <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
+      </div>
+    </li>
+  );
+});
+
 export default function ProfilePage() {
   const { toast } = useToast();
 
-  const handleSaveProfile = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveProfile = useCallback((event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Mock save logic
     const formData = new FormData(event.currentTarget);
     const updatedProfile = {
       name: formData.get('name') as string,
@@ -56,7 +74,15 @@ export default function ProfilePage() {
       title: "Profile Updated",
       description: "Your profile information has been saved.",
     });
-  };
+  }, [toast]);
+
+  const handleChangePhoto = useCallback(() => {
+    // Mock photo change logic
+    toast({
+      title: "Change Photo Clicked",
+      description: "This would typically open a file dialog or a cropping tool.",
+    });
+  }, [toast]);
 
   return (
     <div className="space-y-8">
@@ -73,17 +99,16 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Avatar and Basic Info */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="shadow-lg">
             <CardContent className="pt-6 flex flex-col items-center text-center">
               <Avatar className="h-32 w-32 mb-4 border-4 border-primary shadow-md" data-ai-hint="profile picture large">
-                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.name} />
-                <AvatarFallback className="text-4xl">{getInitials(userProfile.name)}</AvatarFallback>
+                <AvatarImage src={userProfileData.avatarUrl} alt={userProfileData.name} />
+                <AvatarFallback className="text-4xl">{getInitials(userProfileData.name)}</AvatarFallback>
               </Avatar>
-              <h2 className="text-2xl font-semibold">{userProfile.name}</h2>
-              <p className="text-muted-foreground">{userProfile.title}</p>
-              <Button variant="outline" size="sm" className="mt-4">
+              <h2 className="text-2xl font-semibold">{userProfileData.name}</h2>
+              <p className="text-muted-foreground">{userProfileData.title}</p>
+              <Button variant="outline" size="sm" className="mt-4" onClick={handleChangePhoto}>
                 <Edit3 className="mr-2 h-4 w-4" /> Change Photo
               </Button>
             </CardContent>
@@ -96,21 +121,20 @@ export default function ProfilePage() {
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center">
                 <Mail className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfile.email}</span>
+                <span>{userProfileData.email}</span>
               </div>
               <div className="flex items-center">
                 <Phone className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfile.phone}</span>
+                <span>{userProfileData.phone}</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfile.location}</span>
+                <span>{userProfileData.location}</span>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column: Editable Details and Activity */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="shadow-lg">
             <CardHeader>
@@ -122,26 +146,26 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" name="name" defaultValue={userProfile.name} />
+                        <Input id="name" name="name" defaultValue={userProfileData.name} />
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="title">Job Title / Role</Label>
-                        <Input id="title" name="title" defaultValue={userProfile.title} />
+                        <Input id="title" name="title" defaultValue={userProfileData.title} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <Label htmlFor="location">Location</Label>
-                        <Input id="location" name="location" defaultValue={userProfile.location} />
+                        <Input id="location" name="location" defaultValue={userProfileData.location} />
                     </div>
                     <div className="space-y-1.5">
                         <Label htmlFor="phone">Phone</Label>
-                        <Input id="phone" name="phone" type="tel" defaultValue={userProfile.phone} />
+                        <Input id="phone" name="phone" type="tel" defaultValue={userProfileData.phone} />
                     </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" name="bio" defaultValue={userProfile.bio} rows={4} placeholder="Tell us about yourself..." />
+                  <Textarea id="bio" name="bio" defaultValue={userProfileData.bio} rows={4} placeholder="Tell us about yourself..." />
                 </div>
                 <Button type="submit">Save Profile</Button>
               </form>
@@ -153,12 +177,12 @@ export default function ProfilePage() {
               <CardTitle>Skills</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-2">
-              {userProfile.skills.map((skill) => (
+              {userProfileData.skills.map((skill) => (
                 <span key={skill} className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded-full shadow-sm">
                   {skill}
                 </span>
               ))}
-               {userProfile.skills.length === 0 && <p className="text-sm text-muted-foreground">No skills listed.</p>}
+               {userProfileData.skills.length === 0 && <p className="text-sm text-muted-foreground">No skills listed.</p>}
             </CardContent>
           </Card>
 
@@ -168,16 +192,10 @@ export default function ProfilePage() {
               <CardDescription>Your latest actions within TaskZen.</CardDescription>
             </CardHeader>
             <CardContent>
-              {userProfile.recentActivity.length > 0 ? (
+              {userProfileData.recentActivity.length > 0 ? (
                 <ul className="space-y-4">
-                  {userProfile.recentActivity.map((activity) => (
-                    <li key={activity.id} className="flex items-start">
-                      <BarChart2 className="mr-3 mt-1 h-5 w-5 text-primary flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium">{activity.action}</p>
-                        <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
-                      </div>
-                    </li>
+                  {userProfileData.recentActivity.map((activity) => (
+                    <MemoizedActivityItem key={activity.id} activity={activity} />
                   ))}
                 </ul>
               ) : (
@@ -190,5 +208,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    

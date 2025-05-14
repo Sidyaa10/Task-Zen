@@ -1,7 +1,7 @@
 
 "use client";
 import type { ReactNode } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useCallback, useMemo } from 'react'; // Added memo, useCallback, useMemo
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select"
 import { Badge } from '@/components/ui/badge';
 import { format, addMonths, subMonths, startOfWeek, addDays, isSameMonth, isSameDay, getMonth, getYear } from 'date-fns';
+import type { DayPicker } from 'react-day-picker'; // For DayContent props type
 
 interface CalendarEvent {
   id: string;
@@ -33,6 +34,74 @@ const sampleEvents: CalendarEvent[] = [
   { id: '6', title: 'Follow up with John', date: new Date(2024, 7, 2), type: 'reminder' },
 ];
 
+const EventBadge = memo(function EventBadge({ type }: { type: CalendarEvent['type'] }) {
+  const colors = {
+    task: 'bg-blue-500',
+    meeting: 'bg-green-500',
+    reminder: 'bg-yellow-500',
+  };
+  return <span className={`inline-block w-2 h-2 rounded-full mr-2 ${colors[type]}`} />;
+});
+
+interface CustomDayContentProps {
+  date: Date;
+  activeModifiers: Partial<Record<import('react-day-picker').Matcher, boolean>>; // Simplified DayPicker internal type
+  allEvents: CalendarEvent[];
+  currentDisplayMonth: Date;
+}
+
+const CustomDayContent = memo(function CustomDayContent({
+  date,
+  activeModifiers,
+  allEvents,
+  currentDisplayMonth,
+}: CustomDayContentProps) {
+  const dayEvents = allEvents.filter(
+    (event) => isSameDay(event.date, date) && isSameMonth(event.date, currentDisplayMonth)
+  );
+  return (
+    <>
+      <span className={cn("self-start", {"font-bold": activeModifiers.selected || activeModifiers.today})}>{format(date, "d")}</span>
+      {dayEvents.length > 0 && (
+        <div className="mt-1 space-y-0.5 overflow-y-auto max-h-10 text-xs">
+          {dayEvents.slice(0,2).map(event => (
+            <div key={event.id} className="flex items-center truncate">
+              <EventBadge type={event.type} />
+              <span className="truncate">{event.title}</span>
+            </div>
+          ))}
+          {dayEvents.length > 2 && <div className="text-muted-foreground text-[10px]">+{dayEvents.length-2} more</div>}
+        </div>
+      )}
+    </>
+  );
+});
+
+const MemoizedEventListItem = memo(function EventListItem({event}: {event: CalendarEvent}) {
+  return (
+    <div className="p-3 rounded-md border bg-card hover:bg-muted/50 transition-colors">
+      <div className="flex items-center mb-1">
+        <EventBadge type={event.type} />
+        <h4 className="font-semibold text-sm">{event.title}</h4>
+      </div>
+      <p className="text-xs text-muted-foreground">{format(event.date, "p")}</p>
+      {event.description && <p className="text-xs text-muted-foreground mt-1">{event.description}</p>}
+    </div>
+  );
+});
+
+const MemoizedUpcomingEventItem = memo(function UpcomingEventItem({event}: {event: CalendarEvent}) {
+  return (
+    <div className="p-2 rounded-md border text-xs">
+      <div className="flex items-center">
+        <EventBadge type={event.type} />
+        <span className="font-medium">{event.title}</span>
+      </div>
+      <span className="text-muted-foreground ml-4">{format(event.date, "MMM d, p")}</span>
+    </div>
+  );
+});
+
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -46,32 +115,34 @@ export default function CalendarPage() {
   }, []);
 
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = useCallback((date: Date | undefined) => {
     setSelectedDate(date);
-  };
+  }, []);
 
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-  const today = () => {
-    setCurrentDate(new Date());
-    setSelectedDate(new Date());
-  }
+  const nextMonth = useCallback(() => setCurrentDate(prev => addMonths(prev, 1)), []);
+  const prevMonth = useCallback(() => setCurrentDate(prev => subMonths(prev, 1)), []);
+  const today = useCallback(() => {
+    const now = new Date();
+    setCurrentDate(now);
+    setSelectedDate(now);
+  }, []);
 
-  const getEventsForDate = (date: Date | undefined) => {
+  const getEventsForDate = useCallback((date: Date | undefined) => {
     if (!date) return [];
     return events.filter(event => isSameDay(event.date, date));
-  }
+  }, [events]);
   
-  const selectedDateEvents = getEventsForDate(selectedDate);
+  const selectedDateEvents = useMemo(() => getEventsForDate(selectedDate), [selectedDate, getEventsForDate]);
 
-  const EventBadge = ({ type }: { type: CalendarEvent['type'] }) => {
-    const colors = {
-      task: 'bg-blue-500',
-      meeting: 'bg-green-500',
-      reminder: 'bg-yellow-500',
-    };
-    return <span className={`inline-block w-2 h-2 rounded-full mr-2 ${colors[type]}`} />;
-  };
+  const dayPickerComponents = useMemo(() => ({
+    DayContent: (props: { date: Date; activeModifiers: any; }) => (
+      <CustomDayContent
+        {...props}
+        allEvents={events}
+        currentDisplayMonth={currentDate}
+      />
+    ),
+  }), [events, currentDate]);
 
   const renderMonthView = () => (
     <Calendar
@@ -93,31 +164,10 @@ export default function CalendarPage() {
         table: "w-full border-collapse space-y-1",
         row: "flex w-full mt-0",
       }}
-      components={{
-        DayContent: ({ date, activeModifiers }) => {
-          const dayEvents = events.filter(event => isSameDay(event.date, date) && isSameMonth(event.date, currentDate));
-          return (
-            <>
-              <span className={cn("self-start", {"font-bold": activeModifiers.selected || activeModifiers.today})}>{format(date, "d")}</span>
-              {dayEvents.length > 0 && (
-                <div className="mt-1 space-y-0.5 overflow-y-auto max-h-10 text-xs">
-                  {dayEvents.slice(0,2).map(event => (
-                    <div key={event.id} className="flex items-center truncate">
-                      <EventBadge type={event.type} />
-                      <span className="truncate">{event.title}</span>
-                    </div>
-                  ))}
-                  {dayEvents.length > 2 && <div className="text-muted-foreground text-[10px]">+{dayEvents.length-2} more</div>}
-                </div>
-              )}
-            </>
-          );
-        }
-      }}
+      components={dayPickerComponents}
     />
   );
 
-  // Placeholder for week/day views
   const renderWeekView = () => <Card className="p-4 min-h-[400px] flex items-center justify-center"><p>Week View (Coming Soon)</p></Card>;
   const renderDayView = () => <Card className="p-4 min-h-[400px] flex items-center justify-center"><p>Day View (Coming Soon)</p></Card>;
 
@@ -152,7 +202,6 @@ export default function CalendarPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Main Calendar View */}
         <div className="flex-1 space-y-4">
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -189,7 +238,6 @@ export default function CalendarPage() {
           </Card>
         </div>
 
-        {/* Sidebar for Event Details */}
         <div className="w-full md:w-80 lg:w-96 space-y-4">
             <Card className="shadow-lg">
                 <CardHeader>
@@ -202,14 +250,7 @@ export default function CalendarPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 max-h-[450px] overflow-y-auto">
                     {selectedDateEvents.length > 0 ? selectedDateEvents.map(event => (
-                        <div key={event.id} className="p-3 rounded-md border bg-card hover:bg-muted/50 transition-colors">
-                            <div className="flex items-center mb-1">
-                                <EventBadge type={event.type} />
-                                <h4 className="font-semibold text-sm">{event.title}</h4>
-                            </div>
-                            <p className="text-xs text-muted-foreground">{format(event.date, "p")}</p>
-                            {event.description && <p className="text-xs text-muted-foreground mt-1">{event.description}</p>}
-                        </div>
+                        <MemoizedEventListItem key={event.id} event={event} />
                     )) : (
                         <div className="text-center text-muted-foreground py-8">
                              <List className="mx-auto h-12 w-12 opacity-30" />
@@ -229,13 +270,7 @@ export default function CalendarPage() {
                         .sort((a,b) => a.date.getTime() - b.date.getTime())
                         .slice(0,5)
                         .map(event => (
-                        <div key={event.id} className="p-2 rounded-md border text-xs">
-                            <div className="flex items-center">
-                                <EventBadge type={event.type} />
-                                <span className="font-medium">{event.title}</span>
-                            </div>
-                            <span className="text-muted-foreground ml-4">{format(event.date, "MMM d, p")}</span>
-                        </div>
+                          <MemoizedUpcomingEventItem key={event.id} event={event} />
                     ))}
                     {events.filter(event => event.date >= new Date()).length === 0 && (
                          <p className="text-sm text-muted-foreground text-center py-4">No upcoming events.</p>
@@ -251,5 +286,3 @@ export default function CalendarPage() {
 function cn(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
 }
-
-    

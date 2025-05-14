@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { GripVertical, MessageSquare, Paperclip, CalendarIcon } from "lucide-react";
 import type { ComponentProps } from "react";
+import { memo } from "react";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps extends ComponentProps<typeof Card> {
@@ -14,7 +15,7 @@ interface TaskCardProps extends ComponentProps<typeof Card> {
   priority?: "low" | "medium" | "high";
 }
 
-export function TaskCard({ 
+const TaskCardInner = ({ 
   title, 
   description, 
   dueDate, 
@@ -24,7 +25,7 @@ export function TaskCard({
   priority,
   className, 
   ...props 
-}: TaskCardProps) {
+}: TaskCardProps) => {
   
   const priorityColors = {
     low: "bg-green-500",
@@ -78,3 +79,5 @@ export function TaskCard({
     </Card>
   );
 }
+
+export const TaskCard = memo(TaskCardInner);

@@ -1,8 +1,9 @@
 
 "use client";
 import type { ReactNode } from 'react';
+import { memo, useCallback } from 'react'; // Added memo, useCallback
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"; // Added CardFooter
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, CreditCard, Download, ShieldCheck, DollarSign, RefreshCw, Edit } from "lucide-react";
 import {
@@ -15,9 +16,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link'; // Added Link import
 
 // Mock Data
-const currentPlan = {
+const currentPlanData = { // Renamed to avoid conflict
   name: "Pro Plan",
   price: 29,
   billingCycle: "monthly",
@@ -32,18 +34,26 @@ const currentPlan = {
   renewalAmount: 29,
 };
 
-const paymentMethods = [
+const paymentMethodsData = [ // Renamed
   { id: "pm_1", type: "Visa", last4: "4242", expiry: "12/25", isDefault: true },
   { id: "pm_2", type: "Mastercard", last4: "5555", expiry: "06/27", isDefault: false },
 ];
 
-const billingHistory = [
+const billingHistoryData = [ // Renamed
   { id: "inv_1", date: "July 15, 2024", amount: 29, status: "Paid", description: "Pro Plan - Monthly" },
   { id: "inv_2", date: "June 15, 2024", amount: 29, status: "Paid", description: "Pro Plan - Monthly" },
   { id: "inv_3", date: "May 15, 2024", amount: 29, status: "Paid", description: "Pro Plan - Monthly" },
 ];
 
-const availablePlans = [
+interface Plan {
+  name: string;
+  priceMonthly: number;
+  priceYearly: number;
+  features: string[];
+  isCurrent: boolean;
+  highlight?: string;
+}
+const availablePlansData: Plan[] = [ // Renamed and typed
   { 
     name: "Basic", 
     priceMonthly: 0, 
@@ -68,25 +78,118 @@ const availablePlans = [
   },
 ];
 
+interface PaymentMethod {
+  id: string;
+  type: string;
+  last4: string;
+  expiry: string;
+  isDefault: boolean;
+}
+
+interface BillingHistoryEntry {
+  id: string;
+  date: string;
+  amount: number;
+  status: "Paid" | "Failed" | "Pending";
+  description: string;
+}
+
+const MemoizedPlanCard = memo(function PlanCard({ plan, onPlanChange }: { plan: Plan, onPlanChange: (planName: string) => void }) {
+  return (
+    <Card className={`flex flex-col ${plan.isCurrent ? 'border-primary border-2' : ''} ${plan.highlight ? 'shadow-xl scale-[1.02]' : 'shadow-md'}`}>
+        {plan.highlight && <Badge variant="default" className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">{plan.highlight}</Badge>}
+        <CardHeader className="items-center text-center">
+            <CardTitle className="text-2xl">{plan.name}</CardTitle>
+            <CardDescription className="text-3xl font-bold">${plan.priceMonthly}<span className="text-sm font-normal text-muted-foreground">/mo</span></CardDescription>
+            {plan.priceYearly > 0 && <CardDescription className="text-xs text-muted-foreground">or ${plan.priceYearly}/year (Save {((1 - plan.priceYearly / (plan.priceMonthly * 12)) * 100).toFixed(0)}%)</CardDescription>}
+        </CardHeader>
+        <CardContent className="flex-grow space-y-2">
+            <ul className="space-y-1.5 text-sm text-muted-foreground">
+                {plan.features.map((feature, index) => (
+                <li key={index} className="flex items-start">
+                    <CheckCircle className="mr-2 mt-0.5 h-4 w-4 text-green-500 flex-shrink-0" />
+                    <span>{feature}</span>
+                </li>
+                ))}
+            </ul>
+        </CardContent>
+        <CardFooter className="pt-2"> {/* Use CardFooter for consistency */}
+            <Button 
+                className="w-full" 
+                variant={plan.isCurrent ? "outline" : "default"}
+                onClick={() => !plan.isCurrent && onPlanChange(plan.name)}
+                disabled={plan.isCurrent}
+            >
+                {plan.isCurrent ? "Current Plan" : `Choose ${plan.name}`}
+            </Button>
+        </CardFooter>
+    </Card>
+  );
+});
+
+const MemoizedPaymentMethodItem = memo(function PaymentMethodItem({ method, onSetDefault, onEdit, onRemove }: { method: PaymentMethod, onSetDefault: () => void, onEdit: () => void, onRemove: () => void }) {
+  return (
+    <li className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+      <div className="flex items-center">
+        <CreditCard className="mr-3 h-6 w-6 text-muted-foreground" />
+        <div>
+          <p className="font-medium">{method.type} ending in {method.last4}</p>
+          <p className="text-sm text-muted-foreground">Expires {method.expiry}</p>
+        </div>
+        {method.isDefault && <Badge variant="secondary" className="ml-3">Default</Badge>}
+      </div>
+      <div className="flex gap-2">
+        {!method.isDefault && <Button variant="ghost" size="sm" onClick={onSetDefault}>Set as Default</Button>}
+        <Button variant="ghost" size="sm" onClick={onEdit}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onRemove}>Remove</Button>
+      </div>
+    </li>
+  );
+});
+
+const MemoizedBillingHistoryRow = memo(function BillingHistoryRow({ invoice, onDownload }: { invoice: BillingHistoryEntry, onDownload: () => void }) {
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{invoice.id.replace("inv_", "#INV-00")}</TableCell>
+      <TableCell>{invoice.date}</TableCell>
+      <TableCell>{invoice.description}</TableCell>
+      <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
+      <TableCell className="text-center">
+        <Badge variant={invoice.status === 'Paid' ? 'default' : 'destructive'} className={invoice.status === 'Paid' ? 'bg-green-500 hover:bg-green-600' : ''}>
+          {invoice.status}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right">
+        <Button variant="outline" size="sm" onClick={onDownload}>
+          <Download className="mr-1 h-4 w-4" /> Download
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+});
 
 export default function BillingPage() {
   const { toast } = useToast();
 
-  const handlePlanChange = (planName: string) => {
+  const handlePlanChange = useCallback((planName: string) => {
     toast({
       title: "Plan Change Requested",
       description: `You've requested to switch to the ${planName}. Follow the next steps to confirm.`,
     });
-    // In a real app, this would navigate to a checkout/confirmation page
     console.log(`Changing plan to ${planName}`);
-  };
+  }, [toast]);
 
-  const handleAddPaymentMethod = () => {
+  const handleAddPaymentMethod = useCallback(() => {
      toast({
       title: "Add Payment Method",
       description: "Redirecting to secure payment gateway... (Simulated)",
     });
-  }
+  }, [toast]);
+
+  const handleSetDefaultPayment = useCallback(() => toast({title: "Set as Default Clicked"}), [toast]);
+  const handleEditPayment = useCallback(() => toast({title: "Edit Payment Method", description: "This would open a modal or form."}), [toast]);
+  const handleRemovePayment = useCallback(() => toast({title: "Remove Payment Method", variant: "destructive"}), [toast]);
+  const handleDownloadInvoice = useCallback((invoiceId: string) => toast({title: "Download Invoice", description: `Downloading invoice ${invoiceId}`}), [toast]);
 
 
   return (
@@ -96,16 +199,15 @@ export default function BillingPage() {
         <p className="text-muted-foreground">Manage your subscription, payment methods, and view billing history.</p>
       </div>
 
-      {/* Current Plan Section */}
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center">
-                <DollarSign className="mr-2 h-6 w-6 text-primary" /> Current Plan: {currentPlan.name}
+                <DollarSign className="mr-2 h-6 w-6 text-primary" /> Current Plan: {currentPlanData.name}
               </CardTitle>
               <CardDescription>
-                Your current subscription details. Renews on {currentPlan.nextBillingDate} for ${currentPlan.renewalAmount}.
+                Your current subscription details. Renews on {currentPlanData.nextBillingDate} for ${currentPlanData.renewalAmount}.
               </CardDescription>
             </div>
             <Button variant="outline" onClick={() => toast({title: "Manage Subscription Clicked"})}>Manage Subscription</Button>
@@ -113,7 +215,7 @@ export default function BillingPage() {
         </CardHeader>
         <CardContent>
           <ul className="space-y-2 text-sm">
-            {currentPlan.features.map((feature, index) => (
+            {currentPlanData.features.map((feature, index) => (
               <li key={index} className="flex items-center">
                 <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
                 {feature}
@@ -123,7 +225,6 @@ export default function BillingPage() {
         </CardContent>
       </Card>
 
-      {/* Upgrade/Change Plan Section */}
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="flex items-center">
@@ -132,40 +233,12 @@ export default function BillingPage() {
             <CardDescription>Choose a plan that best suits your needs.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-            {availablePlans.map((plan) => (
-            <Card key={plan.name} className={`flex flex-col ${plan.isCurrent ? 'border-primary border-2' : ''} ${plan.highlight ? 'shadow-xl scale-[1.02]' : 'shadow-md'}`}>
-                {plan.highlight && <Badge variant="default" className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">{plan.highlight}</Badge>}
-                <CardHeader className="items-center text-center">
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <CardDescription className="text-3xl font-bold">${plan.priceMonthly}<span className="text-sm font-normal text-muted-foreground">/mo</span></CardDescription>
-                    {plan.priceYearly > 0 && <CardDescription className="text-xs text-muted-foreground">or ${plan.priceYearly}/year (Save {((1 - plan.priceYearly / (plan.priceMonthly * 12)) * 100).toFixed(0)}%)</CardDescription>}
-                </CardHeader>
-                <CardContent className="flex-grow space-y-2">
-                    <ul className="space-y-1.5 text-sm text-muted-foreground">
-                        {plan.features.map((feature, index) => (
-                        <li key={index} className="flex items-start">
-                            <CheckCircle className="mr-2 mt-0.5 h-4 w-4 text-green-500 flex-shrink-0" />
-                            <span>{feature}</span>
-                        </li>
-                        ))}
-                    </ul>
-                </CardContent>
-                <CardContent className="pt-2">
-                    <Button 
-                        className="w-full" 
-                        variant={plan.isCurrent ? "outline" : "default"}
-                        onClick={() => !plan.isCurrent && handlePlanChange(plan.name)}
-                        disabled={plan.isCurrent}
-                    >
-                        {plan.isCurrent ? "Current Plan" : `Choose ${plan.name}`}
-                    </Button>
-                </CardContent>
-            </Card>
+            {availablePlansData.map((plan) => (
+              <MemoizedPlanCard key={plan.name} plan={plan} onPlanChange={handlePlanChange} />
             ))}
         </CardContent>
       </Card>
 
-      {/* Payment Methods Section */}
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -176,29 +249,21 @@ export default function BillingPage() {
                 <CardDescription>Manage your saved payment methods.</CardDescription>
             </div>
             <Button variant="outline" onClick={handleAddPaymentMethod}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add New Method
+                <PlusCircleIcon className="mr-2 h-4 w-4" /> Add New Method
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {paymentMethods.length > 0 ? (
+          {paymentMethodsData.length > 0 ? (
             <ul className="space-y-4">
-              {paymentMethods.map((method) => (
-                <li key={method.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center">
-                    <CreditCard className="mr-3 h-6 w-6 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{method.type} ending in {method.last4}</p>
-                      <p className="text-sm text-muted-foreground">Expires {method.expiry}</p>
-                    </div>
-                    {method.isDefault && <Badge variant="secondary" className="ml-3">Default</Badge>}
-                  </div>
-                  <div className="flex gap-2">
-                    {!method.isDefault && <Button variant="ghost" size="sm" onClick={() => toast({title: "Set as Default Clicked"})}>Set as Default</Button>}
-                    <Button variant="ghost" size="sm" onClick={() => toast({title: "Edit Payment Method", description: "This would open a modal or form."})}><Edit className="h-4 w-4 mr-1" /> Edit</Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => toast({title: "Remove Payment Method", variant: "destructive"})}>Remove</Button>
-                  </div>
-                </li>
+              {paymentMethodsData.map((method) => (
+                <MemoizedPaymentMethodItem 
+                  key={method.id} 
+                  method={method}
+                  onSetDefault={handleSetDefaultPayment}
+                  onEdit={handleEditPayment}
+                  onRemove={handleRemovePayment}
+                />
               ))}
             </ul>
           ) : (
@@ -207,7 +272,6 @@ export default function BillingPage() {
         </CardContent>
       </Card>
 
-      {/* Billing History Section */}
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -228,25 +292,14 @@ export default function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {billingHistory.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell className="font-medium">{invoice.id.replace("inv_", "#INV-00")}</TableCell>
-                  <TableCell>{invoice.date}</TableCell>
-                  <TableCell>{invoice.description}</TableCell>
-                  <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant={invoice.status === 'Paid' ? 'default' : 'destructive'} className={invoice.status === 'Paid' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                      {invoice.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => toast({title: "Download Invoice", description: `Downloading invoice ${invoice.id}`})}>
-                      <Download className="mr-1 h-4 w-4" /> Download
-                    </Button>
-                  </TableCell>
-                </TableRow>
+              {billingHistoryData.map((invoice) => (
+                <MemoizedBillingHistoryRow 
+                  key={invoice.id} 
+                  invoice={invoice} 
+                  onDownload={() => handleDownloadInvoice(invoice.id)}
+                />
               ))}
-              {billingHistory.length === 0 && (
+              {billingHistoryData.length === 0 && (
                  <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
                         No billing history available.
@@ -274,7 +327,7 @@ export default function BillingPage() {
 }
 
 interface PlusCircleProps extends React.SVGProps<SVGSVGElement> {}
-const PlusCircleIcon = (props: PlusCircleProps) => (
+const PlusCircleIcon = (props: PlusCircleProps) => ( // This component is small, memoization might be overkill unless proven bottleneck
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -292,5 +345,3 @@ const PlusCircleIcon = (props: PlusCircleProps) => (
     <line x1="8" y1="12" x2="16" y2="12" />
   </svg>
 );
-
-    
