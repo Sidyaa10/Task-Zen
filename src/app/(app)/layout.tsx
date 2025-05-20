@@ -191,6 +191,27 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
+        {/* Desktop Header */}
+        <header className="hidden md:flex sticky top-0 z-30 h-16 items-center justify-between px-6 border-b border-border/20 bg-background/80 backdrop-blur-lg">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="text-foreground md:hidden" />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {navItems.find(item => pathname.startsWith(item.href))?.label || "TaskZen"}
+            </h1>
+            <div className="relative ml-4 max-w-md flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search tasks, projects..."
+                className="pl-9 w-full bg-background/50 border-border/30 focus-visible:ring-1 focus-visible:ring-accent/50"
+              />
+            </div>
+          </div>
+          <div className="flex items-center">
+            <ThemeToggleButton />
+          </div>
+        </header>
+
         {/* Mobile Header */}
         <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between px-4 border-b border-border/20 bg-background/80 backdrop-blur-lg">
           <div className="flex items-center gap-2">
@@ -199,13 +220,8 @@ function AppLayoutContent({ children }: { children: ReactNode }) {
               {navItems.find(item => pathname.startsWith(item.href))?.label || "TaskZen"}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-              <Search className="h-5 w-5" />
-            </Button>
-            <Button size="icon" className="bg-gradient-to-br from-primary to-accent hover:opacity-90">
-              <Plus className="h-5 w-5" />
-            </Button>
+          <div className="flex items-center">
+            <ThemeToggleButton />
           </div>
         </header>
 
