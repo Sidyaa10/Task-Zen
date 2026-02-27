@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   CalendarDays,
@@ -161,6 +161,10 @@ export default function HomePage() {
   const [sameDayReminder, setSameDayReminder] = useState(true);
 
   const [progressEdit, setProgressEdit] = useState<Record<string, string>>({});
+  const startDateInputRef = useRef<HTMLInputElement | null>(null);
+  const endDateInputRef = useRef<HTMLInputElement | null>(null);
+  const timeStartInputRef = useRef<HTMLInputElement | null>(null);
+  const timeEndInputRef = useRef<HTMLInputElement | null>(null);
 
   const dates = useMemo(() => Array.from({ length: 17 }, (_, i) => addDays(selectedDate, i - 4)), [selectedDate]);
   const monthCells = useMemo(() => buildMonthCells(selectedMonth), [selectedMonth]);
@@ -197,6 +201,18 @@ export default function HomePage() {
   useEffect(() => {
     void loadMonthPreview(monthKey(selectedMonth));
   }, [selectedMonth]);
+
+  const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+    const input = ref.current;
+    if (!input) return;
+    const pickerInput = input as HTMLInputElement & { showPicker?: () => void };
+    if (typeof pickerInput.showPicker === 'function') {
+      pickerInput.showPicker();
+      return;
+    }
+    input.focus();
+    input.click();
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -509,11 +525,18 @@ export default function HomePage() {
                 type="date"
                 value={startDate}
                 onChange={(event) => setStartDate(event.target.value)}
+                onClick={() => openPicker(startDateInputRef)}
                 className="pr-10 taskzen-hide-picker-indicator"
+                ref={startDateInputRef}
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5">
+              <button
+                type="button"
+                onClick={() => openPicker(startDateInputRef)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5"
+                aria-label="Open start date picker"
+              >
                 <CalendarDays className="h-3.5 w-3.5 text-[#282623]" />
-              </span>
+              </button>
             </div>
             {(category === 'skill_development_goal' || category === 'deadline_project') ? (
               <div className="relative">
@@ -521,11 +544,18 @@ export default function HomePage() {
                   type="date"
                   value={endDate}
                   onChange={(event) => setEndDate(event.target.value)}
+                  onClick={() => openPicker(endDateInputRef)}
                   className="pr-10 taskzen-hide-picker-indicator"
+                  ref={endDateInputRef}
                 />
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5">
+                <button
+                  type="button"
+                  onClick={() => openPicker(endDateInputRef)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5"
+                  aria-label="Open end date picker"
+                >
                   <CalendarDays className="h-3.5 w-3.5 text-[#282623]" />
-                </span>
+                </button>
               </div>
             ) : (
               <Input value="Same day" disabled />
@@ -535,22 +565,36 @@ export default function HomePage() {
                 type="time"
                 value={timeStart}
                 onChange={(event) => setTimeStart(event.target.value)}
+                onClick={() => openPicker(timeStartInputRef)}
                 className="pr-10 taskzen-hide-picker-indicator"
+                ref={timeStartInputRef}
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5">
+              <button
+                type="button"
+                onClick={() => openPicker(timeStartInputRef)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5"
+                aria-label="Open start time picker"
+              >
                 <Clock3 className="h-3.5 w-3.5 text-[#282623]" />
-              </span>
+              </button>
             </div>
             <div className="relative">
               <Input
                 type="time"
                 value={timeEnd}
                 onChange={(event) => setTimeEnd(event.target.value)}
+                onClick={() => openPicker(timeEndInputRef)}
                 className="pr-10 taskzen-hide-picker-indicator"
+                ref={timeEndInputRef}
               />
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5">
+              <button
+                type="button"
+                onClick={() => openPicker(timeEndInputRef)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border-2 border-[#282623] bg-white p-0.5"
+                aria-label="Open end time picker"
+              >
                 <Clock3 className="h-3.5 w-3.5 text-[#282623]" />
-              </span>
+              </button>
             </div>
           </div>
           {category === 'skill_development_goal' ? (
