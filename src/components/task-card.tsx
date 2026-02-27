@@ -38,14 +38,14 @@ const TaskCardInner = ({
       <CardHeader className="p-4">
         <div className="flex justify-between items-start">
           <CardTitle className="text-base font-semibold leading-tight">{title}</CardTitle>
-          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+          <GripVertical className="h-5 w-5 text-[#282623] cursor-grab" />
         </div>
         {description && <CardDescription className="text-xs mt-1 line-clamp-2">{description}</CardDescription>}
       </CardHeader>
       {(tags && tags.length > 0 || dueDate) && (
         <CardContent className="p-4 pt-0">
           {dueDate && (
-            <div className="flex items-center text-xs text-muted-foreground mb-2">
+            <div className="flex items-center text-xs text-[#4F4A49] mb-2 font-medium">
               <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
               <span>{dueDate}</span>
             </div>
@@ -60,7 +60,7 @@ const TaskCardInner = ({
         </CardContent>
       )}
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="flex items-center gap-3 text-[#4F4A49] font-medium">
           {typeof commentsCount === 'number' && (
             <div className="flex items-center text-xs">
               <MessageSquare className="h-3.5 w-3.5 mr-1" /> {commentsCount}

@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import { Toaster } from "@/components/ui/toaster";
-// Removed SidebarProvider import as it's no longer used here
+import { AuthProviders } from '@/components/providers/auth-providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TaskZen - Your Minimal Productivity App',
-  description: 'Organize your tasks with TaskZen, inspired by Notion, Linear, and Framer.',
+  title: 'TASK-ZEN',
+  description: 'Task-Zen is a structured goal, event, and focus scheduling platform for measurable productivity.',
 };
 
 export default function RootLayout({
@@ -27,17 +25,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {/* SidebarProvider has been removed from here */}
-          {children}
-          <Toaster />
-        </ThemeProvider>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <AuthProviders>{children}</AuthProviders>
       </body>
     </html>
   );

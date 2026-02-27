@@ -1,210 +1,193 @@
+'use client';
 
-"use client";
-import type { ReactNode } from 'react';
-import { memo, useCallback } from 'react'; // Added memo, useCallback
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Edit3, Mail, Phone, MapPin, Briefcase, BarChart2, Shield, Settings } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { CalendarCheck2, CheckCircle2, Flame, Gauge, Mail, Target, TrendingUp, UserRound } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuth } from '@/contexts/auth-context';
 
-// Mock user data
-const userProfileData = { // Renamed
-  name: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  avatarUrl: "https://picsum.photos/seed/alex/200/200",
-  title: "Senior Product Manager",
-  location: "San Francisco, CA",
-  phone: "+1 (555) 123-4567",
-  bio: "Passionate about building innovative products that solve real-world problems. Experienced in agile methodologies, user research, and cross-functional team leadership. Always eager to learn and grow.",
-  skills: ["Product Strategy", "Agile Development", "UX Research", "Market Analysis", "Team Leadership"],
-  recentActivity: [
-    { id: "1", action: "Updated task 'Finalize Q3 Roadmap'", timestamp: "2 hours ago" },
-    { id: "2", action: "Commented on project 'Website Redesign'", timestamp: "5 hours ago" },
-    { id: "3", action: "Completed task 'User Persona Interviews'", timestamp: "1 day ago" },
-  ],
+
+type WeeklyDatum = { label: string; value: number };
+type ProfileStats = {
+  name: string;
+  email: string;
+  joinedAt: string;
+  totalTasksCompleted: number;
+  activeGoals: number;
+  completionRate: number;
+  productivityStreak: number;
+  weekly: WeeklyDatum[];
+  monthly: WeeklyDatum[];
 };
 
-interface Activity {
-  id: string;
-  action: string;
-  timestamp: string;
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || '')
+    .join('');
 }
 
-const getInitials = (name: string) => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-};
-
-const MemoizedActivityItem = memo(function ActivityItem({ activity }: { activity: Activity }) {
-  return (
-    <li className="flex items-start">
-      <BarChart2 className="mr-3 mt-1 h-5 w-5 text-primary flex-shrink-0" />
-      <div>
-        <p className="text-sm font-medium">{activity.action}</p>
-        <p className="text-xs text-muted-foreground">{activity.timestamp}</p>
-      </div>
-    </li>
-  );
-});
-
 export default function ProfilePage() {
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const [stats, setStats] = useState<ProfileStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSaveProfile = useCallback((event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const updatedProfile = {
-      name: formData.get('name') as string,
-      title: formData.get('title') as string,
-      location: formData.get('location') as string,
-      phone: formData.get('phone') as string,
-      bio: formData.get('bio') as string,
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/taskzen/profile/stats', { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to load profile stats');
+        setStats(data.stats || null);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Failed to load profile stats');
+      } finally {
+        setLoading(false);
+      }
     };
-    console.log("Saving profile:", updatedProfile);
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved.",
-    });
-  }, [toast]);
 
-  const handleChangePhoto = useCallback(() => {
-    // Mock photo change logic
-    toast({
-      title: "Change Photo Clicked",
-      description: "This would typically open a file dialog or a cropping tool.",
-    });
-  }, [toast]);
+    void load();
+  }, []);
+
+  const peakWeekly = useMemo(() => Math.max(1, ...(stats?.weekly || []).map((entry) => entry.value)), [stats]);
+  const peakMonthly = useMemo(() => Math.max(1, ...(stats?.monthly || []).map((entry) => entry.value)), [stats]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#9997BF] border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-          <p className="text-muted-foreground">View and manage your personal information.</p>
-        </div>
-        <Button asChild variant="outline">
-          <Link href="/settings">
-            <Settings className="mr-2 h-4 w-4" /> Edit in Settings
-          </Link>
-        </Button>
+    <div className="space-y-5 pb-24">
+      <Card className="taskzen-card">
+        <CardContent className="flex flex-col gap-4 pt-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16 border-2 border-[#9997BF]/35">
+              <AvatarImage src={user?.profilePicture || undefined} alt={stats?.name || 'User avatar'} />
+              <AvatarFallback>{initials(stats?.name || user?.name || 'TZ')}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-xl font-semibold text-[#282623]">{stats?.name || user?.name || 'Task-Zen User'}</h2>
+              <p className="flex items-center gap-1 text-sm text-[#746D6C]"><Mail className="h-4 w-4" />{stats?.email || user?.email || 'No email set'}</p>
+              <p className="mt-1 text-xs text-[#746D6C]">Joined {new Date(stats?.joinedAt || Date.now()).toLocaleDateString()}</p>
+            </div>
+          </div>
+          <p className="rounded-full bg-white/70 px-3 py-1 text-xs text-[#746D6C]">Profile dashboard synced with your account data</p>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <Card className="taskzen-card">
+          <CardContent className="pt-5">
+            <p className="text-xs text-[#746D6C]">Total Tasks Completed</p>
+            <p className="mt-1 flex items-center gap-2 text-2xl font-semibold text-[#282623]"><CheckCircle2 className="h-5 w-5" />{stats?.totalTasksCompleted || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="taskzen-card">
+          <CardContent className="pt-5">
+            <p className="text-xs text-[#746D6C]">Active Goals</p>
+            <p className="mt-1 flex items-center gap-2 text-2xl font-semibold text-[#282623]"><Target className="h-5 w-5" />{stats?.activeGoals || 0}</p>
+          </CardContent>
+        </Card>
+        <Card className="taskzen-card">
+          <CardContent className="pt-5">
+            <p className="text-xs text-[#746D6C]">Completion Rate</p>
+            <p className="mt-1 flex items-center gap-2 text-2xl font-semibold text-[#282623]"><Gauge className="h-5 w-5" />{stats?.completionRate || 0}%</p>
+          </CardContent>
+        </Card>
+        <Card className="taskzen-card">
+          <CardContent className="pt-5">
+            <p className="text-xs text-[#746D6C]">Productivity Streak</p>
+            <p className="mt-1 flex items-center gap-2 text-2xl font-semibold text-[#282623]"><Flame className="h-5 w-5" />{stats?.productivityStreak || 0} days</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 space-y-6">
-          <Card className="shadow-lg">
-            <CardContent className="pt-6 flex flex-col items-center text-center">
-              <Avatar className="h-32 w-32 mb-4 border-4 border-primary shadow-md" data-ai-hint="profile picture large">
-                <AvatarImage src={userProfileData.avatarUrl} alt={userProfileData.name} />
-                <AvatarFallback className="text-4xl">{getInitials(userProfileData.name)}</AvatarFallback>
-              </Avatar>
-              <h2 className="text-2xl font-semibold">{userProfileData.name}</h2>
-              <p className="text-muted-foreground">{userProfileData.title}</p>
-              <Button variant="outline" size="sm" className="mt-4" onClick={handleChangePhoto}>
-                <Edit3 className="mr-2 h-4 w-4" /> Change Photo
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center">
-                <Mail className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfileData.email}</span>
-              </div>
-              <div className="flex items-center">
-                <Phone className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfileData.phone}</span>
-              </div>
-              <div className="flex items-center">
-                <MapPin className="mr-3 h-5 w-5 text-muted-foreground" />
-                <span>{userProfileData.location}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>About Me</CardTitle>
-              <CardDescription>This information will be displayed publicly so be careful what you share.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSaveProfile} className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input id="name" name="name" defaultValue={userProfileData.name} />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="title">Job Title / Role</Label>
-                        <Input id="title" name="title" defaultValue={userProfileData.title} />
-                    </div>
+      <Card className="taskzen-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><TrendingUp className="h-4 w-4" />Weekly Productivity Graph</CardTitle>
+          <CardDescription>Completed sessions over the last 7 days.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-7 gap-3">
+            {(stats?.weekly || []).map((entry) => (
+              <div key={entry.label} className="flex flex-col items-center gap-2">
+                <div className="flex h-32 w-full items-end rounded-xl bg-[#F2ECF0] px-1 py-1">
+                  <motion.div
+                    className="w-full rounded-lg bg-gradient-to-t from-[#9997BF] to-[#ABC1C7]"
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(8, Math.round((entry.value / peakWeekly) * 100))}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <Label htmlFor="location">Location</Label>
-                        <Input id="location" name="location" defaultValue={userProfileData.location} />
-                    </div>
-                    <div className="space-y-1.5">
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input id="phone" name="phone" type="tel" defaultValue={userProfileData.phone} />
-                    </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea id="bio" name="bio" defaultValue={userProfileData.bio} rows={4} placeholder="Tell us about yourself..." />
-                </div>
-                <Button type="submit">Save Profile</Button>
-              </form>
-            </CardContent>
-          </Card>
+                <p className="text-xs text-[#746D6C]">{entry.label}</p>
+                <p className="text-sm font-semibold text-[#282623]">{entry.value}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Skills</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              {userProfileData.skills.map((skill) => (
-                <span key={skill} className="px-3 py-1 text-sm bg-secondary text-secondary-foreground rounded-full shadow-sm">
-                  {skill}
-                </span>
-              ))}
-               {userProfileData.skills.length === 0 && <p className="text-sm text-muted-foreground">No skills listed.</p>}
-            </CardContent>
-          </Card>
+      <Card className="taskzen-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><TrendingUp className="h-4 w-4" />Monthly Productivity Graph</CardTitle>
+          <CardDescription>Completed sessions across the last 6 months.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-6 gap-3">
+            {(stats?.monthly || []).map((entry) => (
+              <div key={entry.label} className="flex flex-col items-center gap-2">
+                <div className="flex h-32 w-full items-end rounded-xl bg-[#F2ECF0] px-1 py-1">
+                  <motion.div
+                    className="w-full rounded-lg bg-gradient-to-t from-[#282623] to-[#9997BF]"
+                    initial={{ height: 0 }}
+                    animate={{ height: `${Math.max(8, Math.round((entry.value / peakMonthly) * 100))}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+                <p className="text-xs text-[#746D6C]">{entry.label}</p>
+                <p className="text-sm font-semibold text-[#282623]">{entry.value}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest actions within TaskZen.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {userProfileData.recentActivity.length > 0 ? (
-                <ul className="space-y-4">
-                  {userProfileData.recentActivity.map((activity) => (
-                    <MemoizedActivityItem key={activity.id} activity={activity} />
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">No recent activity to display.</p>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Card className="taskzen-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><CalendarCheck2 className="h-4 w-4" />Account Snapshot</CardTitle>
+          <CardDescription>Current profile configuration and account visibility.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-xl border border-[#746D6C]/20 bg-white/70 p-3">
+            <p className="text-xs text-[#746D6C]">Display name</p>
+            <p className="text-sm font-medium text-[#282623]">{stats?.name || user?.name || 'Not set'}</p>
+          </div>
+          <div className="rounded-xl border border-[#746D6C]/20 bg-white/70 p-3">
+            <p className="text-xs text-[#746D6C]">Email address</p>
+            <p className="text-sm font-medium text-[#282623]">{stats?.email || user?.email || 'Not set'}</p>
+          </div>
+          <div className="rounded-xl border border-[#746D6C]/20 bg-white/70 p-3">
+            <p className="text-xs text-[#746D6C]">Account type</p>
+            <p className="flex items-center gap-1 text-sm font-medium text-[#282623]"><UserRound className="h-4 w-4" />Standard</p>
+          </div>
+          <div className="rounded-xl border border-[#746D6C]/20 bg-white/70 p-3">
+            <p className="text-xs text-[#746D6C]">System status</p>
+            <p className="text-sm font-medium text-[#282623]">Synced</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {error ? <p className="text-sm text-rose-600">{error}</p> : null}
     </div>
   );
 }

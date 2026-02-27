@@ -4,155 +4,120 @@
 
 @layer base {
   :root {
-    --background: 0 0% 93%; /* soft #EDEDED */
-    --foreground: 0 0% 12%; /* dark #1F1F1F */
+    --background: 20 18% 96%;
+    --foreground: 30 8% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card-foreground: 30 8% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 263 80% 70%;
+    --popover-foreground: 30 8% 16%;
+    --primary: 248 20% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 267 100% 75%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
+    --secondary: 266 21% 82%;
+    --secondary-foreground: 30 8% 16%;
+    --muted: 340 10% 92%;
+    --muted-foreground: 18 5% 44%;
+    --accent: 196 23% 73%;
+    --accent-foreground: 30 8% 16%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 267 100% 75%;
-    --radius: 0.75rem;
+    --border: 18 8% 76%;
+    --input: 18 8% 84%;
+    --ring: 248 20% 67%;
+    --radius: 1rem;
 
-    /* Gradient colors */
-    --gradient-from: 263 80% 60%;
-    --gradient-to: 287 100% 70%;
-    --gradient-stops: var(--gradient-from), var(--gradient-to);
-
-    /* Sidebar */
-    --sidebar-background: 240 10% 6%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 263 80% 70%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 30 8% 16%;
+    --sidebar-primary: 248 20% 67%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 18%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 12%;
-    --sidebar-ring: 267 100% 75%;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  }
-}
-
-@layer components {
-  /* Gradient text */
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
-  }
-
-  /* Glass card */
-  .glass-card {
-    @apply backdrop-blur-md bg-white/10 dark:bg-gray-800/50 rounded-xl p-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/10;
-  }
-
-  /* Glow effect */
-  .glow {
-    box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.3);
-  }
-
-  /* Button styles */
-  .btn-gradient {
-    @apply relative overflow-hidden bg-gradient-to-r from-primary to-accent text-white font-medium rounded-lg px-6 py-2.5 transition-all duration-300;
-    box-shadow: 0 4px 15px -5px hsl(var(--primary) / 0.4);
-  }
-
-  .btn-gradient:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px -5px hsl(var(--primary) / 0.6);
-  }
-
-  .btn-gradient:active {
-    transform: translateY(0);
-  }
-}
-
-@layer utilities {
-  /* Custom animations */
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
-  }
-
-  .animate-slide-in-right {
-    animation: slideInRight 0.3s ease-out forwards;
-  }
-}
-
-/* Keyframes */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-/* Custom scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
-}
-
-/* Custom selection */
-::selection {
-  @apply bg-primary/20 text-primary-foreground;
-}
-
-  .dark {
-    --background: 0 0% 12%; /* dark #1F1F1F */
-    --foreground: 0 0% 93%; /* soft #EDEDED */
-    --card: 0 0% 16%;
-    --card-foreground: 0 0% 93%;
-    --popover: 0 0% 16%;
-    --popover-foreground: 0 0% 93%;
-    --primary: 257 83% 65%; /* brand #7F5AF0 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 20%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 24%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 257 83% 60%; /* Darker/more saturated brand for dark accents */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 22%;
-    --input: 0 0% 22%;
-    --ring: 257 83% 65%; /* brand #7F5AF0 */
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-
-    /* Sidebar specific colors for dark theme */
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 257 83% 65%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 93%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 257 83% 65%;
+    --sidebar-accent: 266 21% 88%;
+    --sidebar-accent-foreground: 30 8% 16%;
+    --sidebar-border: 18 8% 84%;
+    --sidebar-ring: 248 20% 67%;
   }
 
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground antialiased;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(171, 193, 199, 0.35), transparent 42%),
+      radial-gradient(circle at 85% 0%, rgba(153, 151, 191, 0.28), transparent 36%),
+      linear-gradient(180deg, #f7f3f5 0%, #f1eff4 48%, #f2f5f7 100%);
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-family: var(--font-geist-sans), 'Segoe UI', sans-serif;
   }
+}
+
+@layer components {
+  .taskzen-card {
+    @apply rounded-3xl border border-[#746D6C]/25 bg-white/70 shadow-[0_18px_50px_-28px_rgba(40,38,35,0.45)] backdrop-blur-xl;
+  }
+
+  .taskzen-soft-button {
+    @apply rounded-xl border border-[#746D6C]/20 bg-white/80 text-[#282623] shadow-sm transition duration-200 hover:bg-white hover:shadow;
+  }
+}
+
+/* Make tiny icon-only controls clearly readable on light cards */
+.taskzen-card .lucide,
+button .lucide,
+a .lucide {
+  color: #282623;
+  stroke-width: 2.35;
+}
+
+.taskzen-date-time-input::-webkit-calendar-picker-indicator {
+  filter: invert(0) brightness(0) contrast(180%);
+  opacity: 1;
+  border: 2px solid #282623;
+  border-radius: 9999px;
+  padding: 2px;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 0 1px rgba(40, 38, 35, 0.25);
+}
+
+.taskzen-date-time-input {
+  color-scheme: light;
+}
+
+.taskzen-date-time-input[type='date']::-webkit-calendar-picker-indicator,
+.taskzen-date-time-input[type='time']::-webkit-calendar-picker-indicator,
+.taskzen-date-time-input[type='month']::-webkit-calendar-picker-indicator {
+  filter: invert(0) brightness(0) contrast(180%);
+  opacity: 1;
+}
+
+.taskzen-hide-picker-indicator::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
+@layer utilities {
+  .taskzen-fade-up {
+    animation: taskzenFadeUp 0.3s ease-out;
+  }
+}
+
+@keyframes taskzenFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(116, 109, 108, 0.35) transparent;
+}
+
+::selection {
+  background: rgba(153, 151, 191, 0.3);
+  color: #282623;
+}
