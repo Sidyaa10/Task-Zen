@@ -286,7 +286,6 @@ export async function listTasksForDate(userId: string, date: string, tab: TabTyp
   const baseFilter: any = { userId };
   if (tab === 'completed') {
     baseFilter.status = 'completed';
-    baseFilter.category = { $in: ['skill_development_goal', 'deadline_project'] };
   } else {
     baseFilter.status = 'active';
   }
@@ -322,6 +321,7 @@ export async function listTasksForDate(userId: string, date: string, tab: TabTyp
   });
 
   const filtered = tasks.filter((task: any) => {
+    if (tab === 'completed') return true;
     const taskId = task._id.toString();
     if (page === 'focus') return true;
     if (task.category === 'event_reminder' || task.category === 'daily_quick_task') {
