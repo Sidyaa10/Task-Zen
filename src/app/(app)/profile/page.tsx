@@ -71,7 +71,7 @@ export default function ProfilePage() {
       <Card className="taskzen-card">
         <CardContent className="flex flex-col gap-4 pt-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16 border-2 border-[#9997BF]/35">
+            <Avatar className="h-16 w-16 border-2 border-[#9997BF]/35">
               <AvatarImage src={user?.profilePicture || undefined} alt={stats?.name || 'User avatar'} />
               <AvatarFallback>{initials(stats?.name || user?.name || 'TZ')}</AvatarFallback>
             </Avatar>
@@ -81,7 +81,7 @@ export default function ProfilePage() {
               <p className="mt-1 text-xs text-[#746D6C]">Joined {new Date(stats?.joinedAt || Date.now()).toLocaleDateString()}</p>
             </div>
           </div>
-          <p className="rounded-full bg-white/70 px-3 py-1 text-xs text-[#746D6C]">Profile dashboard synced with your account data</p>
+          <p className="w-fit rounded-full bg-white/70 px-3 py-1 text-xs text-[#746D6C]">Profile dashboard synced with your account data</p>
         </CardContent>
       </Card>
 
@@ -118,7 +118,8 @@ export default function ProfilePage() {
           <CardDescription>Completed sessions over the last 7 days.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-7 gap-3">
+          <div className="-mx-1 overflow-x-auto px-1">
+            <div className="grid min-w-[420px] grid-cols-7 gap-3">
             {(stats?.weekly || []).map((entry) => (
               <div key={entry.label} className="flex flex-col items-center gap-2">
                 <div className="flex h-32 w-full items-end rounded-xl bg-[#F2ECF0] px-1 py-1">
@@ -133,6 +134,7 @@ export default function ProfilePage() {
                 <p className="text-sm font-semibold text-[#282623]">{entry.value}</p>
               </div>
             ))}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -143,7 +145,8 @@ export default function ProfilePage() {
           <CardDescription>Completed sessions across the last 6 months.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-6 gap-3">
+          <div className="-mx-1 overflow-x-auto px-1">
+            <div className="grid min-w-[420px] grid-cols-6 gap-3">
             {(stats?.monthly || []).map((entry) => (
               <div key={entry.label} className="flex flex-col items-center gap-2">
                 <div className="flex h-32 w-full items-end rounded-xl bg-[#F2ECF0] px-1 py-1">
@@ -158,6 +161,7 @@ export default function ProfilePage() {
                 <p className="text-sm font-semibold text-[#282623]">{entry.value}</p>
               </div>
             ))}
+            </div>
           </div>
         </CardContent>
       </Card>

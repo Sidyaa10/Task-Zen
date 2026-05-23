@@ -28,15 +28,17 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F4F2FA] via-[#EEF2F5] to-[#ECE9EC]">
       <header className="sticky top-0 z-30 border-b border-[#746D6C]/20 bg-white/60 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-3 sm:items-center">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-[#282623]">TASK-ZEN</h1>
+            <h1 className="text-lg font-semibold tracking-tight text-[#282623] sm:text-xl">TASK-ZEN</h1>
             <p className="text-xs text-[#746D6C]">Structured focus. Measurable growth.</p>
           </div>
-          <div className="text-xs text-[#746D6C]">{new Date().toLocaleDateString(undefined, { weekday: 'long' })}</div>
+          <div className="rounded-full bg-white/70 px-3 py-1 text-[11px] text-[#746D6C] sm:text-xs">
+            {new Date().toLocaleDateString(undefined, { weekday: 'long' })}
+          </div>
         </div>
       </header>
-      <div className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6">
+      <div className="mx-auto w-full max-w-6xl flex-1 px-3 pb-28 pt-4 sm:px-4 sm:pb-24 sm:pt-6">
         {children}
       </div>
       <BottomNav />

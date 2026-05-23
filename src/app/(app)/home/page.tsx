@@ -398,7 +398,7 @@ export default function HomePage() {
                     {toMonthLabel(selectedMonth)}
                   </button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl rounded-3xl border-[#746D6C]/20 bg-white/90 backdrop-blur-xl">
+                <DialogContent className="max-h-[90vh] w-[calc(100%-1rem)] max-w-3xl overflow-y-auto rounded-3xl border-[#746D6C]/20 bg-white/90 p-4 backdrop-blur-xl sm:p-6">
                   <DialogHeader>
                     <DialogTitle>Month View</DialogTitle>
                     <DialogDescription>Jump to any date and preview scheduled tasks.</DialogDescription>
@@ -414,7 +414,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-2">
                       <Input
                         type="month"
-                        className="w-[180px]"
+                        className="w-[150px] sm:w-[180px]"
                         value={monthKey(selectedMonth)}
                         onChange={(event) => {
                           const [year, month] = event.target.value.split('-').map(Number);
@@ -435,7 +435,7 @@ export default function HomePage() {
                       <p key={day}>{day}</p>
                     ))}
                   </div>
-                  <div className="mt-2 grid grid-cols-7 gap-2">
+                  <div className="mt-2 grid grid-cols-7 gap-1.5 sm:gap-2">
                     {monthCells.map((cell) => {
                       const isSelected = selectedDate === cell.date;
                       const isToday = cell.date === todayIso;
@@ -448,7 +448,7 @@ export default function HomePage() {
                             setSelectedDate(cell.date);
                             setSelectedMonth(new Date(`${cell.date}T00:00:00.000Z`));
                           }}
-                          className={`min-h-[88px] rounded-xl border p-2 text-left transition ${
+                          className={`min-h-[78px] rounded-xl border p-1.5 text-left transition sm:min-h-[88px] sm:p-2 ${
                             isSelected
                               ? 'border-[#9997BF] bg-[#D0CBE3]/55'
                               : isToday
@@ -458,9 +458,9 @@ export default function HomePage() {
                                   : 'border-transparent bg-[#F5F1F3]/45 text-[#746D6C]/60'
                           }`}
                         >
-                          <p className="text-sm font-semibold">{cell.day}</p>
+                          <p className="text-xs font-semibold sm:text-sm">{cell.day}</p>
                           {preview.slice(0, 2).map((item) => (
-                            <p key={item.id} className="truncate text-[10px] text-[#746D6C]">
+                            <p key={item.id} className="truncate text-[9px] text-[#746D6C] sm:text-[10px]">
                               {item.timeStart} {item.title}
                             </p>
                           ))}
@@ -509,7 +509,7 @@ export default function HomePage() {
           <CardDescription>Structured input for reminders, goals, projects, and quick tasks.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
             <Button variant={category === 'event_reminder' ? 'default' : 'outline'} onClick={() => setCategory('event_reminder')}>Event Reminder</Button>
             <Button variant={category === 'skill_development_goal' ? 'default' : 'outline'} onClick={() => setCategory('skill_development_goal')}>Skill Development Goal</Button>
             <Button variant={category === 'deadline_project' ? 'default' : 'outline'} onClick={() => setCategory('deadline_project')}>Deadline Project</Button>
@@ -519,7 +519,7 @@ export default function HomePage() {
             <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Title" />
             <Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Short purpose or outcome" />
           </div>
-          <div className="grid gap-2 md:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <div className="relative">
               <Input
                 type="date"
@@ -624,7 +624,7 @@ export default function HomePage() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button variant={tab === 'scheduled' ? 'default' : 'outline'} onClick={() => setTab('scheduled')}>Scheduled</Button>
         <Button variant={tab === 'completed' ? 'default' : 'outline'} onClick={() => setTab('completed')}>Completed</Button>
       </div>
@@ -758,7 +758,7 @@ export default function HomePage() {
                           </AnimatePresence>
                         </div>
 
-                        <div className="flex flex-row gap-2 lg:flex-col">
+                        <div className="flex flex-wrap gap-2 lg:flex-col">
                           {(task.category === 'event_reminder' || task.category === 'daily_quick_task') && task.status === 'active' ? (
                             <Button size="sm" onClick={() => void markTaskDone(task._id)}>
                               <CheckCircle2 className="mr-1 h-4 w-4" />Done

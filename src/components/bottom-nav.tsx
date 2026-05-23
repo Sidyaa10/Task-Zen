@@ -16,8 +16,8 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 w-[min(720px,calc(100%-1.5rem))] -translate-x-1/2">
-      <nav className="mx-auto rounded-2xl border border-[#746D6C]/30 bg-[#FFFFFF]/70 px-3 py-2 shadow-[0_12px_30px_-16px_rgba(40,38,35,0.45)] backdrop-blur-xl">
+    <div className="fixed bottom-3 left-1/2 z-50 w-[min(720px,calc(100%-0.75rem))] -translate-x-1/2 sm:bottom-4 sm:w-[min(720px,calc(100%-1.5rem))]">
+      <nav className="mx-auto rounded-2xl border border-[#746D6C]/30 bg-[#FFFFFF]/78 px-2 py-2 shadow-[0_12px_30px_-16px_rgba(40,38,35,0.45)] backdrop-blur-xl sm:px-3">
         <ul className="grid grid-cols-4 gap-1">
           {links.map((link) => {
             const active = pathname === link.href;
@@ -27,7 +27,7 @@ export function BottomNav() {
                 <Link
                   href={link.href}
                   className={cn(
-                    'group flex items-center justify-center gap-2 rounded-xl px-2 py-2 text-sm font-medium transition-all duration-300',
+                    'group flex flex-col items-center justify-center gap-1 rounded-xl px-1.5 py-2 text-[11px] font-medium transition-all duration-300 sm:flex-row sm:gap-2 sm:px-2 sm:text-sm',
                     active
                       ? 'bg-[#9997BF]/25 text-[#282623] shadow-inner'
                       : 'text-[#4F4A49] hover:bg-[#D0CBE3]/45 hover:text-[#282623]'
